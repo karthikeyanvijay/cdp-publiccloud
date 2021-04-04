@@ -1,0 +1,41 @@
+{
+    "environmentName": "vkacdpdev",
+    "credentialName": "vkarthikeyan-aws-ps-cdp-sandbox-env",
+    "region": "us-west-2",
+    "securityAccess": {
+        "securityGroupIdForKnox": "sg-05bf0a53ec1015f77",
+        "defaultSecurityGroupId": "sg-05bf0a53ec1015f77"
+    },
+    "authentication": {
+        "publicKeyId": "vkarthikeyan@7535"
+    },
+    "logStorage": {
+        "storageLocationBase": "s3a://vkarthikeyan-cdp/logs",
+        "instanceProfile": "arn:aws:iam::123456789012:instance-profile/vkarthikeyan-cdp-log-access-instance-profile"
+    },
+    "vpcId": "vpc-0e6aa69e39b8842dc",
+    "subnetIds": [
+        "subnet-01d766bc3e69e837f",
+        "subnet-0721eb20cb7b5a05b",
+        "subnet-0c957a92cad6d5e52"
+    ],
+    "s3GuardTableName": "vkarthikeyan-cdp-dynamodb-table",
+    "description": "Description of the environment",
+    "enableTunnel": true,
+    "workloadAnalytics": true,
+    "reportDeploymentLogs": false,
+    "freeIpa": {
+        "instanceCountByGroup": 1
+    },
+    "tags": [
+        {
+            "key": "project",
+            "value": "self"
+        },
+        {
+            "key": "owner",
+            "value": "vkarthikeyan@cloudera.com"
+        }
+    ],
+    "proxyConfigName": ""
+}

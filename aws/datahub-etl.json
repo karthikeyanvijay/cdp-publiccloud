@@ -1,0 +1,17 @@
+{
+    "clusterName": "vkacdpdevetl01",
+    "clusterDefinitionName": "7.2.8 - Data Engineering Custom DEV",
+    "environmentName": "vkacdpdev",
+    "clusterTemplateName": "7.2.8 - Data Engineering: HA Custom",
+    "tags": [
+        {
+            "key": "project",
+            "value": "self"
+        },
+        {
+            "key": "owner",
+            "value": "vkarthikeyan@cloudera.com"
+        }
+    ],
+    "datahubDatabase": "HA"
+}

@@ -1,0 +1,7 @@
+{
+    "name": "devvc1",
+    "clusterId": "cluster-992t6slf",
+    "cpuRequests": "400",
+    "memoryRequests": "3200",
+    "runtimeSpotComponent": "NONE"
+}

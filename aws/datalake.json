@@ -1,0 +1,20 @@
+{
+  "datalakeName": "vkacdpdevdl",
+  "environmentName": "vkacdpdev",
+  "cloudProviderConfiguration": {
+    "instanceProfile": "arn:aws:iam::123456789012:instance-profile/vkarthikeyan-cdp-data-access-instance-profile",
+    "storageBucketLocation": "s3a://vkarthikeyan-cdp/data"
+  },
+  "scale": "LIGHT_DUTY",
+  "tags": [
+    {
+      "key": "project",
+      "value": "self"
+    },
+    {
+      "key": "owner",
+      "value": "vkarthikeyan@cloudera.com"
+    }
+  ],
+  "runtime": "7.2.8"
+}
