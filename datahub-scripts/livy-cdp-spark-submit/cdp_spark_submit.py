@@ -67,6 +67,11 @@ def track_job(response_headers):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+    )
     url = "https://datahub1-manager0.ps-sandb.a465-9q4k.cloudera.site/datahub1/cdp-proxy-api/livy/"
     username = "vkarthikeyan"
     password = "WorkloadPassWord"
