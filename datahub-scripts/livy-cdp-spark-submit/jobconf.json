@@ -1,0 +1,4 @@
+{
+   "className":"org.apache.spark.examples.SparkPi",
+   "file":"s3a://vkarthikeyan/spark-examples_2.11-2.4.5.7.2.7.6-2.jar"
+}
