@@ -1,0 +1,11 @@
+{
+      "className":"org.apache.spark.examples.SparkPi",
+      "args": [1000],
+      "file":"s3a://vkarthikeyan/spark-examples_2.11-2.4.5.7.2.7.6-2.jar",
+      "driverMemory": "2G",
+      "driverCores": 1,
+      "executorCores": 2,
+      "executorMemory": "4G",
+      "numExecutors": 3,
+      "queue": "default"
+}
