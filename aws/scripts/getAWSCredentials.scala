@@ -2,6 +2,7 @@
 
 object getAWSCredentials extends App {
     
+    // Change the ID Broker hostname here
     val id_broker_host = "ps-sandbox-aws-dl-idbroker0.ps-sandb.a465-9q4k.cloudera.site"
 
     //Retreive credentials from ID Broker
@@ -16,8 +17,8 @@ object getAWSCredentials extends App {
     val aws_secret_key = (id_broker_credentials \ "SecretAccessKey").values.toString
     val aws_session_token = (id_broker_credentials \ "SessionToken").values.toString
     val session_expiry_unixms = (id_broker_credentials \ "Expiration").values.toString.toLong
-    val now = System.currentTimeMillis
-    val is_credential_valid = (session_expiry_unixms - 10000) > now
+    //val now = System.currentTimeMillis
+    //val is_credential_valid = (session_expiry_unixms - 10000) > now
 
     // Use the retreived credentials 
     import com.amazonaws.auth.BasicSessionCredentials
@@ -40,7 +41,6 @@ object getAWSCredentials extends App {
     val secretName = "cde-cloudera-repo"
     val region = "us-west-2"
     val secretsmanager_client = AWSSecretsManagerClient.builder.withCredentials(aws_credentials).withRegion(region).build
-    val getSecretValueResult = secretsmanager_client.getSecretValue(GetSecretValueRequest.withSecretId(secretName))
     val getSecretValueRequest = new GetSecretValueRequest().withSecretId(secretName)
     val getSecretValueResult = secretsmanager_client.getSecretValue(getSecretValueRequest)
     val secret = getSecretValueResult.getSecretString()
