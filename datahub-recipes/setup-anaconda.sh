@@ -7,7 +7,7 @@ ANACONDA_DOWNLOAD_PATH=/tmp
 USER_GROUP_ADMIN=sandbox-default-ps-admin
 USER_GROUP_1=ps-sandbox-aws-env-user-group
 USER_GROUP_2=cdp_sandbox_workers_ww
-TAR_FILE_PATH=/tmp
+TAR_FILE_PATH=/hadoopfs/fs1
 
 echo "#!/bin/bash -e
 # Install Anaconda Binaries
@@ -33,7 +33,9 @@ eval \"\$(conda shell.bash hook)\"
 conda activate spark_python37_env
 pip install xgboost
 conda pack -n spark_python37_env -f -o ${TAR_FILE_PATH}/spark_python37_env.tar.gz
-conda deactivate" > /tmp/setup-conda-pythonenv.sh
+conda deactivate
+chown root:${USER_GROUP_ADMIN} ${TAR_FILE_PATH}/spark_python37_env.tar.gz
+chmod 775 ${TAR_FILE_PATH}/spark_python37_env.tar.gz" > /tmp/setup-conda-pythonenv.sh
 
 echo "#!/bin/bash -e
 # Setup R environment 
@@ -44,7 +46,9 @@ cd ${ANACONDA_PATH}/envs
 eval \"\$(conda shell.bash hook)\"
 conda activate r_env
 conda pack -o ${TAR_FILE_PATH}/r_env.tar.gz -d ./r_env
-conda deactivate"> /tmp/setup-conda-renv.sh
+conda deactivate
+chown root:${USER_GROUP_ADMIN} ${TAR_FILE_PATH}/r_env.tar.gz
+chmod 775 ${TAR_FILE_PATH}/r_env.tar.gz"> /tmp/setup-conda-renv.sh
 
 chmod u+x /tmp/setup-conda-*.sh
 bash /tmp/setup-conda-binaries.sh
