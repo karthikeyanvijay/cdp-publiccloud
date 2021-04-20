@@ -1,0 +1,17 @@
+{
+    "environmentName": "cdpvkazure",
+    "dataAccessRole": "/subscriptions/da35404a-2612-4419-baef-45fcdce6045e/resourcegroups/vkarthikeyan/providers/Microsoft.ManagedIdentity/userAssignedIdentities/cdpvkar-DataAccessIdentity",
+    "rangerAuditRole": "/subscriptions/da35404a-2612-4419-baef-45fcdce6045e/resourcegroups/vkarthikeyan/providers/Microsoft.ManagedIdentity/userAssignedIdentities/cdpvkar-RangerIdentity",
+    "rangerCloudAccessAuthorizerRole": "/subscriptions/da35404a-2612-4419-baef-45fcdce6045e/resourcegroups/vkarthikeyan/providers/Microsoft.ManagedIdentity/userAssignedIdentities/cdpvkar-DataAccessIdentity",
+    "mappings": [
+        {
+            "accessorCrn": "crn:altus:iam:us-west-1:558bc1d2-8867-4357-8524-311d51259233:user:e3f75877-349c-4ebb-be81-0475c9561cbb",
+            "role": "/subscriptions/da35404a-2612-4419-baef-45fcdce6045e/resourcegroups/vkarthikeyan/providers/Microsoft.ManagedIdentity/userAssignedIdentities/cdpvkar-DataAccessIdentity"
+        },
+        {
+            "accessorCrn": "crn:altus:iam:us-west-1:558bc1d2-8867-4357-8524-311d51259233:group:sandbox-default-ps-admin/0cbb6899-9e06-4623-a9d0-45d89c0e75ec",
+            "role": "/subscriptions/da35404a-2612-4419-baef-45fcdce6045e/resourcegroups/vkarthikeyan/providers/Microsoft.ManagedIdentity/userAssignedIdentities/cdpvkar-DataAccessIdentity"
+        }
+    ],
+    "setEmptyMappings": false
+}

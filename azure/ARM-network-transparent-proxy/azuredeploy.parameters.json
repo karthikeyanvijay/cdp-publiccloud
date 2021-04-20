@@ -6,10 +6,10 @@
       "value": "cdp"
     },
     "AllowIPAddress": {
-      "value": "71.135.69.90/32"
+      "value": "0.0.0.0/0"
     },
     "deployVMinPrivateSubnet": {
-      "value": false
+      "value": true
     },
     "resourceTags": {
       "value": {
@@ -19,10 +19,10 @@
       }
     },
     "vmAdminPassword": {
-      "value": "PassW0rd123$"
+      "value": "BadPass#1"
     },
     "setupSquidScript": {
-      "value": "https://raw.githubusercontent.com/karthikeyanvijay/cdp-publiccloud/azure-deploy/azure/infra/basic-network-with-transparent-proxy/setup_squid.sh"
+      "value": "https://raw.githubusercontent.com/karthikeyanvijay/cdp-publiccloud/main/azure/ARM-network-transparent-proxy/setup_squid.sh"
     }
   }
 }

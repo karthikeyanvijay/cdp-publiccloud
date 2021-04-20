@@ -8,12 +8,12 @@
   "scale": "LIGHT_DUTY",
   "tags": [
     {
-      "key": "project",
+      "key": "Project",
       "value": "self"
     },
     {
-      "key": "owner",
-      "value": "vkarthikeyan@cloudera.com"
+      "key": "Owner",
+      "value": "Vijay Anand Karthikeyan"
     }
   ],
   "runtime": "7.2.8"

@@ -13,8 +13,8 @@
     "enableWorkloadAnalytics": true,
     "useSsd": false,
     "tags": {
-            "project": "self",
-            "owner": "vkarthikeyan@cloudera.com"
+            "Project": "Self",
+            "Owner": "Vijay Anand Karthikeyan"
     }
 }
 

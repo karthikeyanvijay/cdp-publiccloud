@@ -1,0 +1,10 @@
+{
+    "environmentCrn": "crn:cdp:environments:us-west-1:558bc1d2-8867-4357-8524-311d51259233:environment:0722a559-b1ec-4c4f-87ca-fb65fc1ac766",
+    "useOverlayNetwork": true,
+    "whitelistIpCIDRs": "",
+    "usePrivateLoadBalancer": true,
+    "azureOptions": {
+        "subnetId": "cdp-prv-subnet5",
+        "enableAZ": true
+    }
+}

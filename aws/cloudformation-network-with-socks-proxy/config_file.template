@@ -1,0 +1,7 @@
+EnvironmentPrefix=
+MyIpAddressCIDR=
+DeployPrivateSubnets=false
+DeployBastionHost=false
+SSHKeyName=
+#Get AMI from https://wiki.centos.org/Cloud/AWS
+LinuxAMIId=

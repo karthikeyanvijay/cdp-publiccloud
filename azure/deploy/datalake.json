@@ -1,0 +1,22 @@
+{
+  "datalakeName": "cdpvkazuredl",
+  "environmentName": "cdpvkazure",
+  "cloudProviderConfiguration": {
+    "managedIdentity": "/subscriptions/da35404a-2612-4419-baef-45fcdce6045e/resourcegroups/vkarthikeyan/providers/Microsoft.ManagedIdentity/userAssignedIdentities/cdpvkar-AssumerIdentity",
+    "storageLocation": "abfs://data@cdpvkar.dfs.core.windows.net"
+  },
+  "scale": "LIGHT_DUTY",
+  "enableRangerRaz": true,
+  "tags": [
+    {
+      "key": "Project",
+      "value": "self"
+    },
+    {
+      "key": "Owner",
+      "value": "Vijay Anand Karthikeyan"
+    }
+  ],
+  "runtime": "7.2.8",
+  "databaseAvailabilityType": "NONE"
+}

@@ -5,12 +5,12 @@
     "clusterTemplateName": "7.2.8 - Data Engineering: HA Custom",
     "tags": [
         {
-            "key": "project",
+            "key": "Project",
             "value": "self"
         },
         {
-            "key": "owner",
-            "value": "vkarthikeyan@cloudera.com"
+            "key": "Owner",
+            "value": "Vijay Anand Karthikeyan"
         }
     ],
     "datahubDatabase": "HA"

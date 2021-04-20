@@ -20,12 +20,15 @@ cat $ssl_dir/squid.key $ssl_dir/squid.crt >> $ssl_dir/squid.pem
 ### Install & Configure Squid
 yum install squid -y
 cp -p /etc/squid/squid.conf /etc/squid/squid.conf.original
-wget https://raw.githubusercontent.com/karthikeyanvijay/cdp-publiccloud/azure-deploy/azure/infra/basic-network-with-transparent-proxy/squid.conf -O /etc/squid/squid.conf
-wget https://raw.githubusercontent.com/karthikeyanvijay/cdp-publiccloud/azure-deploy/azure/infra/basic-network-with-transparent-proxy/http_whitelist.txt -O /etc/squid/http_whitelist.txt
-wget https://raw.githubusercontent.com/karthikeyanvijay/cdp-publiccloud/azure-deploy/azure/infra/basic-network-with-transparent-proxy/https_whitelist.txt -O /etc/squid/https_whitelist.txt
+wget https://raw.githubusercontent.com/karthikeyanvijay/cdp-publiccloud/main/azure/ARM-network-transparent-proxy/squid.conf -O /etc/squid/squid.conf
+wget https://raw.githubusercontent.com/karthikeyanvijay/cdp-publiccloud/main/azure/ARM-network-transparent-proxy/http_whitelist.txt -O /etc/squid/http_whitelist.txt
+wget https://raw.githubusercontent.com/karthikeyanvijay/cdp-publiccloud/main/azure/ARM-network-transparent-proxy/https_whitelist.txt -O /etc/squid/https_whitelist.txt
 systemctl restart squid && systemctl enable squid
 
 ### Setup IP Tables for transparent proxy 
 iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 3129
 iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 3130
 iptables -t nat -A POSTROUTING -s 10.0.0.0/8 -p udp --dport 123 -j MASQUERADE
+
+### CCM Traffic
+iptables -t nat -A POSTROUTING -s 10.0.0.0/8 -p tcp --dport 6000:6049 -j MASQUERADE
