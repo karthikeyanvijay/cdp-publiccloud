@@ -121,6 +121,7 @@
     "squidpublicIpAddressName": "[concat(parameters('namePrefix'), '-pubip-squid')]",
     "server4VMName": "[concat(parameters('namePrefix'), '-vm-server4')]",
     "commonManagedIdentityName": "[concat(parameters('namePrefix'), '-mi-common')]",
+    "logAnalyticsWorkspaceName": "[concat(parameters('namePrefix'), '-loganalytics-common')]",
     "vmSize": "Standard_B2s",
     "vmOsDiskType": "Premium_LRS",
     "adminUsername": "azureuser",
@@ -144,141 +145,106 @@
           "addressPrefixes": [
             "[parameters('vnetAddressPrefix')]"
           ]
-        }
-      },
-      "resources": [
-        {
-          "type": "subnets",
-          "location": "[parameters('location')]",
-          "name": "[variables('subnet1Name')]",
-          "dependsOn": [
-            "[variables('vnetName')]"
-          ],
-          "properties": {
-            "addressPrefix": "[parameters('subnet1Prefix')]",
-            "routeTable": {
-              "id": "[resourceId('Microsoft.Network/routeTables', variables('publicRouteTableName'))]"
-            },
-            "networkSecurityGroup": {
-              "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('publicNSGName'))]"
-            }
-          }
         },
-        {
-          "type": "subnets",
-          "location": "[parameters('location')]",
-          "name": "[variables('subnet2Name')]",
-          "dependsOn": [
-            "[variables('vnetName')]",
-            "[variables('subnet1Name')]"
-          ],
-          "properties": {
-            "addressPrefix": "[parameters('subnet2Prefix')]",
-            "routeTable": {
-              "id": "[resourceId('Microsoft.Network/routeTables', variables('publicRouteTableName'))]"
-            },
-            "networkSecurityGroup": {
-              "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('publicNSGName'))]"
-            }
-          }
-        },
-        {
-          "type": "subnets",
-          "location": "[parameters('location')]",
-          "name": "[variables('subnet3Name')]",
-          "dependsOn": [
-            "[variables('vnetName')]",
-            "[variables('subnet2Name')]"
-          ],
-          "properties": {
-            "addressPrefix": "[parameters('subnet3Prefix')]",
-            "routeTable": {
-              "id": "[resourceId('Microsoft.Network/routeTables', variables('publicRouteTableName'))]"
-            },
-            "networkSecurityGroup": {
-              "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('publicNSGName'))]"
-            }
-          }
-        },
-        {
-          "type": "subnets",
-          "location": "[parameters('location')]",
-          "name": "[variables('subnet4Name')]",
-          "dependsOn": [
-            "[variables('vnetName')]",
-            "[variables('subnet3Name')]"
-          ],
-          "properties": {
-            "addressPrefix": "[parameters('subnet4Prefix')]",
-            "serviceEndpoints": [
-              {
-                "service": "Microsoft.Storage"
+        "subnets": [
+          {
+            "name": "[variables('subnet1Name')]",
+            "properties": {
+              "addressPrefix": "[parameters('subnet1Prefix')]",
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', variables('publicRouteTableName'))]"
               },
-              {
-                "service": "Microsoft.Sql"
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('publicNSGName'))]"
               }
-            ],
-            "routeTable": {
-              "id": "[resourceId('Microsoft.Network/routeTables', variables('privateRouteTableName'))]"
-            },
-            "networkSecurityGroup": {
-              "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('privateNSGName'))]"
             }
-          }
-        },
-        {
-          "type": "subnets",
-          "location": "[parameters('location')]",
-          "name": "[variables('subnet5Name')]",
-          "dependsOn": [
-            "[variables('vnetName')]",
-            "[variables('subnet4Name')]"
-          ],
-          "properties": {
-            "addressPrefix": "[parameters('subnet5Prefix')]",
-            "serviceEndpoints": [
-              {
-                "service": "Microsoft.Storage"
+          },
+          {
+            "name": "[variables('subnet2Name')]",
+            "properties": {
+              "addressPrefix": "[parameters('subnet2Prefix')]",
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', variables('publicRouteTableName'))]"
               },
-              {
-                "service": "Microsoft.Sql"
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('publicNSGName'))]"
               }
-            ],
-            "routeTable": {
-              "id": "[resourceId('Microsoft.Network/routeTables', variables('privateRouteTableName'))]"
-            },
-            "networkSecurityGroup": {
-              "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('privateNSGName'))]"
             }
-          }
-        },
-        {
-          "type": "subnets",
-          "location": "[parameters('location')]",
-          "name": "[variables('subnet6Name')]",
-          "dependsOn": [
-            "[variables('vnetName')]",
-            "[variables('subnet5Name')]"
-          ],
-          "properties": {
-            "addressPrefix": "[parameters('subnet6Prefix')]",
-            "serviceEndpoints": [
-              {
-                "service": "Microsoft.Storage"
+          },
+          {
+            "name": "[variables('subnet3Name')]",
+            "properties": {
+              "addressPrefix": "[parameters('subnet3Prefix')]",
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', variables('publicRouteTableName'))]"
               },
-              {
-                "service": "Microsoft.Sql"
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('publicNSGName'))]"
               }
-            ],
-            "routeTable": {
-              "id": "[resourceId('Microsoft.Network/routeTables', variables('privateRouteTableName'))]"
-            },
-            "networkSecurityGroup": {
-              "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('privateNSGName'))]"
+            }
+          },
+          {
+            "name": "[variables('subnet4Name')]",
+            "properties": {
+              "addressPrefix": "[parameters('subnet4Prefix')]",
+              "serviceEndpoints": [
+                {
+                  "service": "Microsoft.Storage"
+                },
+                {
+                  "service": "Microsoft.Sql"
+                }
+              ],
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', variables('privateRouteTableName'))]"
+              },
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('privateNSGName'))]"
+              }
+            }
+          },
+          {
+            "name": "[variables('subnet5Name')]",
+            "properties": {
+              "addressPrefix": "[parameters('subnet5Prefix')]",
+              "serviceEndpoints": [
+                {
+                  "service": "Microsoft.Storage"
+                },
+                {
+                  "service": "Microsoft.Sql"
+                }
+              ],
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', variables('privateRouteTableName'))]"
+              },
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('privateNSGName'))]"
+              }
+            }
+          },
+          {
+            "name": "[variables('subnet6Name')]",
+            "properties": {
+              "addressPrefix": "[parameters('subnet6Prefix')]",
+              "serviceEndpoints": [
+                {
+                  "service": "Microsoft.Storage"
+                },
+                {
+                  "service": "Microsoft.Sql"
+                }
+              ],
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', variables('privateRouteTableName'))]"
+              },
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('privateNSGName'))]"
+              }
             }
           }
-        }
-      ]
+        ]
+      }
     },
     {
       "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
@@ -286,6 +252,66 @@
       "apiVersion": "2018-11-30",
       "location": "[parameters('location')]",
       "tags": "[parameters('resourceTags')]"
+    },
+    {
+        "type": "Microsoft.OperationalInsights/workspaces",
+        "apiVersion": "2020-10-01",
+        "name": "[variables('logAnalyticsWorkspaceName')]",
+        "location": "[parameters('location')]",
+        "tags": "[parameters('resourceTags')]",
+        "properties": {
+            "sku": {
+                "name": "pergb2018"
+            }
+        },
+        "resources":[
+          {
+            "type": "dataSources",
+            "apiVersion": "2020-08-01",
+            "name": "LINUX_LOGS",
+            "dependsOn": [
+                "[concat('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName'))]"
+            ],
+            "kind": "CustomLog",
+            "properties": {
+                "customLogName": "arm_log_timedelimited",
+                "description": "this is a description",
+                "inputs": [
+                  {
+                      "location": {
+                        "fileSystemLocations": {
+                            "linuxFileTypeLogPaths": [ "/var/log/squid/access.log" ]
+                        }
+                      },
+                      "recordDelimiter": {
+                        "regexDelimiter": {
+                          "matchIndex": 0,
+                          "numberdGroup": null,
+                          "pattern": "(^.*((\\d{2})|(\\d{4}))-([0-1]\\d)-(([0-3]\\d)|(\\d))\\s((\\d)|([0-1]\\d)|(2[0-4])):[0-5][0-9]:[0-5][0-9].*$)"
+                        }
+                      }
+                  }
+                ],
+                "extractions": [
+                {
+                    "extractionName": "TimeGenerated",
+                    "extractionProperties": {
+                    "dateTimeExtraction": {
+                        "regex": [
+                          {
+                              "matchIndex": 0,
+                              "numberdGroup": null,
+                              "pattern": "((\\d{2})|(\\d{4}))-([0-1]\\d)-(([0-3]\\d)|(\\d))\\s((\\d)|([0-1]\\d)|(2[0-4])):[0-5][0-9]:[0-5][0-9]"
+                          }
+                        ]
+                    }
+                    },
+                    "extractionType": "DateTime"
+                }
+                ]
+            }
+          }
+        ]
     },
     {
       "type": "Microsoft.Network/routeTables",
@@ -408,7 +434,7 @@
       "location": "[parameters('location')]",
       "tags": "[parameters('resourceTags')]",
       "dependsOn": [
-        "[variables('subnet4Name')]"
+        "[variables('vnetName')]"
       ],
       "properties": {
           "ipConfigurations": [
@@ -490,7 +516,7 @@
       "location": "[parameters('location')]",
       "tags": "[parameters('resourceTags')]",
       "dependsOn": [
-        "[variables('subnet1Name')]",
+        "[variables('vnetName')]",
         "[variables('squidpublicIpAddressName')]"
       ],
       "properties": {
@@ -501,7 +527,8 @@
                       "subnet": {
                         "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnet1Name'))]"
                       },
-                      "privateIPAllocationMethod": "Dynamic",
+                      "privateIPAddress": "10.10.11.4",
+                      "privateIPAllocationMethod": "Static",
                       "publicIpAddress": {
                         "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('squidpublicIpAddressName'))]"
                     }
@@ -525,7 +552,8 @@
       },
       "dependsOn": [
           "[concat('Microsoft.Network/networkInterfaces/', variables('squidNICName'))]",
-           "[concat('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('commonManagedIdentityName'))]"
+           "[concat('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('commonManagedIdentityName'))]",
+           "[concat('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName'))]"
       ],
       "properties": {
           "hardwareProfile": {
@@ -565,27 +593,69 @@
       },
       "resources":[
         {
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "apiVersion": "2015-06-15",
           "name": "[concat(variables('squidVMName'),'/CustomScript')]",
-          "type": "Microsoft.HybridCompute/machines/extensions",
           "location": "[parameters('location')]",
           "tags": "[parameters('resourceTags')]",
           "dependsOn": [
               "[concat('Microsoft.Compute/virtualMachines/', variables('squidVMName'))]"
           ],
-          "apiVersion": "2019-08-02-preview",
           "properties": {
             "publisher": "Microsoft.Azure.Extensions",
             "type": "CustomScript",
+            "typeHandlerVersion": "2.0",
             "autoUpgradeMinorVersion": true,
             "settings": {
                 "fileUris": [
                 "[parameters('setupSquidScript')]"
               ],
-              "commandToExecute": "sh setup_squid.sh"
+              "commandToExecute": "echo `date`"
             },
             "protectedSettings": {
             }
           }
+        },
+        {
+            "type": "extensions",
+            "apiVersion": "2018-10-01",
+            "name": "DependencyAgentLinux",
+            "location": "[parameters('location')]",
+            "tags": "[parameters('resourceTags')]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', variables('squidVMName'))]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Monitoring.DependencyAgent",
+                "type": "DependencyAgentLinux",
+                "typeHandlerVersion": "9.10",
+                "autoUpgradeMinorVersion": true,
+                "settings": {}
+            }
+        },
+        {
+            "type": "extensions",
+            "apiVersion": "2018-10-01",
+            "name": "OMSAgentForLinux",
+            "location": "[parameters('location')]",
+            "tags": "[parameters('resourceTags')]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', variables('squidVMName'))]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.EnterpriseCloud.Monitoring",
+                "type": "OmsAgentForLinux",
+                "typeHandlerVersion": "1.7",
+                "autoUpgradeMinorVersion": "true",
+                "settings": {
+                    "workspaceId": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName')), '2017-03-15-preview').customerId]",
+                    "azureResourceId": "[concat('Microsoft.Compute/virtualMachines/', variables('squidVMName'))]",
+                    "stopOnMultipleConnections": "true"
+                },
+                "protectedSettings": {
+                    "workspaceKey": "[listKeys(concat('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName')), '2015-03-20').primarySharedKey]"
+                }
+            }
         }
       ]
     }
