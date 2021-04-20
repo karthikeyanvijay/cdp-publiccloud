@@ -20,9 +20,9 @@ cat $ssl_dir/squid.key $ssl_dir/squid.crt >> $ssl_dir/squid.pem
 ### Install & Configure Squid
 yum install squid -y
 cp -p /etc/squid/squid.conf /etc/squid/squid.conf.original
-wget https://vkarthikeyan.s3-us-west-2.amazonaws.com/squid.conf -O /etc/squid/squid.conf
-wget https://vkarthikeyan.s3-us-west-2.amazonaws.com/http_whitelist.txt -O /etc/squid/http_whitelist.txt
-wget https://vkarthikeyan.s3-us-west-2.amazonaws.com/https_whitelist.txt -O /etc/squid/https_whitelist.txt
+wget https://raw.githubusercontent.com/karthikeyanvijay/cdp-publiccloud/azure-deploy/azure/infra/basic-network-with-transparent-proxy/squid.conf -O /etc/squid/squid.conf
+wget https://raw.githubusercontent.com/karthikeyanvijay/cdp-publiccloud/azure-deploy/azure/infra/basic-network-with-transparent-proxy/http_whitelist.txt -O /etc/squid/http_whitelist.txt
+wget https://raw.githubusercontent.com/karthikeyanvijay/cdp-publiccloud/azure-deploy/azure/infra/basic-network-with-transparent-proxy/https_whitelist.txt -O /etc/squid/https_whitelist.txt
 systemctl restart squid && systemctl enable squid
 
 ### Setup IP Tables for transparent proxy 

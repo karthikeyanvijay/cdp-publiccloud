@@ -3,10 +3,26 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "namePrefix": {
-      "value": "vcdp"
+      "value": "cdp"
     },
     "AllowIPAddress": {
       "value": "71.135.69.90/32"
+    },
+    "deployVMinPrivateSubnet": {
+      "value": false
+    },
+    "resourceTags": {
+      "value": {
+          "Owner": "Vijay Anand Karthikeyan",
+          "Project": "CDP",
+          "EndDate": "05012021"
+      }
+    },
+    "vmAdminPassword": {
+      "value": "PassW0rd123$"
+    },
+    "setupSquidScript": {
+      "value": "https://raw.githubusercontent.com/karthikeyanvijay/cdp-publiccloud/azure-deploy/azure/infra/basic-network-with-transparent-proxy/setup_squid.sh"
     }
   }
 }

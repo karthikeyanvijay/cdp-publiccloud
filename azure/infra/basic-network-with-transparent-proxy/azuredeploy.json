@@ -17,6 +17,34 @@
         "description": "IP CIDR to allow connections to public subnet"
       }
     },
+    "deployVMinPrivateSubnet": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Create a server in the private subnet"
+      }
+    },
+    "resourceTags": {
+        "type": "object",
+        "defaultValue": {
+            "Owner": "Vijay Anand Karthikeyan",
+            "Project": "CDP"
+        }
+    },
+    "vmAdminPassword": {
+      "type": "string",
+      "defaultValue": "DefaultPassW0rd$",
+      "metadata": {
+        "description": "Admin password for VMs"
+      }
+    },
+    "setupSquidScript": {
+      "type": "string",
+      "defaultValue": "http://url/setup_squid.sh",
+      "metadata": {
+        "description": "URL/Path for the Squid setup script"
+      }
+    },
     "vnetAddressPrefix": {
       "type": "string",
       "defaultValue": "10.10.0.0/16",
@@ -92,16 +120,18 @@
     "squidVMName": "[concat(parameters('namePrefix'), '-vm-squid')]",
     "squidpublicIpAddressName": "[concat(parameters('namePrefix'), '-pubip-squid')]",
     "server4VMName": "[concat(parameters('namePrefix'), '-vm-server4')]",
+    "commonManagedIdentityName": "[concat(parameters('namePrefix'), '-mi-common')]",
     "vmSize": "Standard_B2s",
     "vmOsDiskType": "Premium_LRS",
     "adminUsername": "azureuser",
-    "adminPassword": "PassW0rd123$"
+    "adminPassword": "[parameters('vmAdminPassword')]"
   },
   "resources": [
     {
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('vnetName')]",
       "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('publicNSGName'))]",
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('privateNSGName'))]",
@@ -180,6 +210,14 @@
           ],
           "properties": {
             "addressPrefix": "[parameters('subnet4Prefix')]",
+            "serviceEndpoints": [
+              {
+                "service": "Microsoft.Storage"
+              },
+              {
+                "service": "Microsoft.Sql"
+              }
+            ],
             "routeTable": {
               "id": "[resourceId('Microsoft.Network/routeTables', variables('privateRouteTableName'))]"
             },
@@ -198,6 +236,14 @@
           ],
           "properties": {
             "addressPrefix": "[parameters('subnet5Prefix')]",
+            "serviceEndpoints": [
+              {
+                "service": "Microsoft.Storage"
+              },
+              {
+                "service": "Microsoft.Sql"
+              }
+            ],
             "routeTable": {
               "id": "[resourceId('Microsoft.Network/routeTables', variables('privateRouteTableName'))]"
             },
@@ -216,6 +262,14 @@
           ],
           "properties": {
             "addressPrefix": "[parameters('subnet6Prefix')]",
+            "serviceEndpoints": [
+              {
+                "service": "Microsoft.Storage"
+              },
+              {
+                "service": "Microsoft.Sql"
+              }
+            ],
             "routeTable": {
               "id": "[resourceId('Microsoft.Network/routeTables', variables('privateRouteTableName'))]"
             },
@@ -227,9 +281,17 @@
       ]
     },
     {
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+      "name": "[variables('commonManagedIdentityName')]",
+      "apiVersion": "2018-11-30",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]"
+    },
+    {
       "type": "Microsoft.Network/routeTables",
       "name": "[variables('publicRouteTableName')]",
       "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
       "properties": {
         "routes": [
         ]
@@ -239,6 +301,7 @@
       "type": "Microsoft.Network/routeTables",
       "name": "[variables('privateRouteTableName')]",
       "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
       "properties": {
         "routes": [
             {
@@ -257,6 +320,7 @@
       "apiVersion": "2019-08-01",
       "name": "[variables('privateNSGName')]",
       "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
       "properties": {
         "securityRules": [
         ]
@@ -267,6 +331,7 @@
       "apiVersion": "2019-08-01",
       "name": "[variables('publicNSGName')]",
       "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
       "properties": {
         "securityRules": [
           {
@@ -303,6 +368,7 @@
       "apiVersion": "2019-08-01",
       "name": "[variables('allowAllNSGName')]",
       "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
       "properties": {
         "securityRules": [
           {
@@ -336,9 +402,11 @@
     },
     {
       "type": "Microsoft.Network/networkInterfaces",
+      "condition": "[parameters('deployVMinPrivateSubnet')]",
       "apiVersion": "2018-10-01",
       "name": "[variables('server4NICName')]",
       "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
       "dependsOn": [
         "[variables('subnet4Name')]"
       ],
@@ -358,9 +426,11 @@
     },
     {
       "type": "Microsoft.Compute/virtualMachines",
+      "condition": "[parameters('deployVMinPrivateSubnet')]",
       "apiVersion": "2020-12-01",
       "name": "[variables('server4VMName')]",
       "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
       "dependsOn": [
           "[concat('Microsoft.Network/networkInterfaces/', variables('server4NICName'))]"
       ],
@@ -405,6 +475,7 @@
       "type": "Microsoft.Network/publicIpAddresses",
       "name": "[variables('squidpublicIpAddressName')]",
       "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
       "sku": {
           "name": "Basic"
       },
@@ -417,6 +488,7 @@
       "apiVersion": "2018-10-01",
       "name": "[variables('squidNICName')]",
       "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
       "dependsOn": [
         "[variables('subnet1Name')]",
         "[variables('squidpublicIpAddressName')]"
@@ -444,8 +516,16 @@
       "apiVersion": "2020-12-01",
       "name": "[variables('squidVMName')]",
       "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
+      "identity": {
+          "type": "userAssigned",
+          "userAssignedIdentities": {
+              "[resourceID('Microsoft.ManagedIdentity/userAssignedIdentities/',variables('commonManagedIdentityName'))]": {}
+          }
+      },
       "dependsOn": [
-          "[concat('Microsoft.Network/networkInterfaces/', variables('squidNICName'))]"
+          "[concat('Microsoft.Network/networkInterfaces/', variables('squidNICName'))]",
+           "[concat('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('commonManagedIdentityName'))]"
       ],
       "properties": {
           "hardwareProfile": {
@@ -482,7 +562,32 @@
                   }
               }
           }
-      }
+      },
+      "resources":[
+        {
+          "name": "[concat(variables('squidVMName'),'/CustomScript')]",
+          "type": "Microsoft.HybridCompute/machines/extensions",
+          "location": "[parameters('location')]",
+          "tags": "[parameters('resourceTags')]",
+          "dependsOn": [
+              "[concat('Microsoft.Compute/virtualMachines/', variables('squidVMName'))]"
+          ],
+          "apiVersion": "2019-08-02-preview",
+          "properties": {
+            "publisher": "Microsoft.Azure.Extensions",
+            "type": "CustomScript",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+                "fileUris": [
+                "[parameters('setupSquidScript')]"
+              ],
+              "commandToExecute": "sh setup_squid.sh"
+            },
+            "protectedSettings": {
+            }
+          }
+        }
+      ]
     }
   ]
 }
