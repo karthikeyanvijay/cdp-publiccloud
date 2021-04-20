@@ -7,4 +7,8 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
-az deployment group create --resource-group ${1} --template-file azuredeploy.json --parameters azuredeploy.parameters.json
+az deployment group create  \
+        --resource-group ${1} \
+        --template-file azuredeploy.json \
+        --parameters azuredeploy.parameters.json \
+        --parameters AllowIPAddress='71.135.69.90/32'

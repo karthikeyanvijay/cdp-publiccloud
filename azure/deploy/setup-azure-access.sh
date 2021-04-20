@@ -1,5 +1,5 @@
 #!/bin/sh
-export SUBSCRIPTIONID=""
+export SUBSCRIPTIONID=`az account list|jq '.[]|{"name": .name, "subscriptionId": .id, "tenantId": .tenantId, "state": .state}' | jq -r 'select(.name == "Professional Services" ) | .subscriptionId'`
 export RESOURCEGROUPNAME="vkarthikeyan"
 export STORAGEACCOUNTNAME="cdpvkar"
 export ASSUMER_OBJECTID=$(az identity list -g $RESOURCEGROUPNAME --subscription $SUBSCRIPTIONID|jq '.[]|{"name":.name,"principalId":.principalId}|select(.name | test("AssumerIdentity"))|.principalId'| tr -d '"')
