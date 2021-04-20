@@ -1,0 +1,855 @@
+{
+    "cdhVersion": "7.2.8",
+    "displayName": "Dataengineering HA Custom",
+    "services": [
+      {
+        "refName": "zookeeper",
+        "serviceType": "ZOOKEEPER",
+        "serviceConfigs": [
+          {
+            "name": "jute_maxbuffer",
+            "value": "20971520"
+          }
+        ],
+        "roleConfigGroups": [
+          {
+            "refName": "zookeeper-SERVER-BASE",
+            "roleType": "SERVER",
+            "configs": [
+              {
+                "name": "heap_dump_directory_free_space_absolute_thresholds",
+                "value": "{\"warning\":\"never\",\"critical\":\"never\"}"
+              },
+              {
+                "name": "oom_heap_dump_enabled",
+                "value": "false"
+              },
+              {
+                "name": "zookeeper_server_java_heapsize",
+                "value": "2147483648"
+              }
+            ],
+            "base": true
+          }
+        ]
+      },
+      {
+        "refName": "hdfs",
+        "serviceType": "HDFS",
+        "serviceConfigs": [
+          {
+            "name": "zookeeper_service",
+            "ref": "zookeeper"
+          },
+          {
+            "name": "hdfs_verify_ec_with_topology_enabled",
+            "value": false
+          },
+          {
+            "name": "core_site_safety_valve",
+            "value": "<property><name>fs.s3a.buffer.dir</name><value>${env.LOCAL_DIRS:-${hadoop.tmp.dir}}/s3a</value></property><property><name>fs.s3a.committer.name</name><value>directory</value></property>"
+          }
+        ],
+        "roleConfigGroups": [
+          {
+            "refName": "hdfs-NAMENODE-BASE",
+            "roleType": "NAMENODE",
+            "base": true,
+            "configs": [
+              {
+                "name": "role_config_suppression_namenode_java_heapsize_minimum_validator",
+                "value": "true"
+              },
+              {
+                "name": "role_config_suppression_fs_trash_interval_minimum_validator",
+                "value": "true"
+              },
+              {
+                "name": "fs_trash_interval",
+                "value": "0"
+              },
+              {
+                "name": "fs_trash_checkpoint_interval",
+                "value": "0"
+              },
+              {
+                "name": "erasure_coding_default_policy",
+                "value": " "
+              },
+              {
+                "name": "process_swap_memory_thresholds",
+                "value": "{\"warning\":\"never\",\"critical\":\"never\"}"
+              },
+              {
+                "name": "heap_dump_directory_free_space_absolute_thresholds",
+                "value": "{\"warning\":\"never\",\"critical\":\"never\"}"
+              },
+              {
+                "name": "oom_heap_dump_enabled",
+                "value": "false"
+              }
+            ]
+          },
+          {
+            "refName": "hdfs-FAILOVERCONTROLLER-BASE",
+            "roleType": "FAILOVERCONTROLLER",
+            "configs": [
+              {
+                "name": "failover_controller_java_heapsize",
+                "value": "1073741824"
+              },
+              {
+                "name": "process_swap_memory_thresholds",
+                "value": "{\"warning\":\"never\",\"critical\":\"never\"}"
+              },
+              {
+                "name": "heap_dump_directory_free_space_absolute_thresholds",
+                "value": "{\"warning\":\"never\",\"critical\":\"never\"}"
+              },
+              {
+                "name": "oom_heap_dump_enabled",
+                "value": "false"
+              }
+            ],
+            "base": true
+          },
+          {
+            "refName": "hdfs-JOURNALNODE-BASE",
+            "roleType": "JOURNALNODE",
+            "configs": [
+              {
+                "name": "process_swap_memory_thresholds",
+                "value": "{\"warning\":\"never\",\"critical\":\"never\"}"
+              },
+              {
+                "name": "heap_dump_directory_free_space_absolute_thresholds",
+                "value": "{\"warning\":\"never\",\"critical\":\"never\"}"
+              },
+              {
+                "name": "journalNode_java_heapsize",
+                "value": "2147483648"
+              },
+              {
+                "name": "oom_heap_dump_enabled",
+                "value": "false"
+              }
+            ],
+            "base": true
+          },
+          {
+            "refName": "hdfs-DATANODE-BASE",
+            "roleType": "DATANODE",
+            "configs": [
+              {
+                "name": "process_swap_memory_thresholds",
+                "value": "{\"warning\":\"never\",\"critical\":\"never\"}"
+              },
+              {
+                "name": "dfs_balance_bandwidthPerSec",
+                "value": "1073741824"
+              },
+              {
+                "name": "heap_dump_directory_free_space_absolute_thresholds",
+                "value": "{\"warning\":\"never\",\"critical\":\"never\"}"
+              },
+              {
+                "name": "dfs_datanode_max_locked_memory",
+                "value": "8589934592"
+              },
+              {
+                "name": "oom_heap_dump_enabled",
+                "value": "false"
+              }
+            ],
+            "base": true
+          },
+          {
+            "refName": "hdfs-SECONDARYNAMENODE-BASE",
+            "roleType": "SECONDARYNAMENODE",
+            "configs": [
+              {
+                "name": "fs_checkpoint_dir_list",
+                "value": "/should_not_be_required_in_HA_setup"
+              }
+            ],
+            "base": true
+          },
+          {
+            "refName": "hdfs-BALANCER-BASE",
+            "roleType": "BALANCER",
+            "configs": [
+              {
+                "name": "rebalancer_threshold",
+                "value": "7"
+              },
+              {
+                "name": "balancer_java_heapsize",
+                "value": "4294967296"
+              }
+            ],
+            "base": true
+          },
+          {
+            "refName": "hdfs-GATEWAY-BASE",
+            "roleType": "GATEWAY",
+            "base": true,
+            "configs": [
+              {
+                "name": "dfs_client_use_trash",
+                "value": false
+              },
+              {
+                "name": "role_config_suppression_hdfs_trash_disabled_validator",
+                "value": "true"
+              },
+              {
+                "name": "hdfs_client_env_safety_valve",
+                "value": "HADOOP_OPTS=\"-Dorg.wildfly.openssl.path=/usr/lib64 ${HADOOP_OPTS}\""
+              },
+              {
+                "name": "hdfs_client_java_heapsize",
+                "value": "1073741824"
+              }
+            ]
+          },
+          {
+            "refName": "hdfs-HTTPFS-BASE",
+            "roleType": "HTTPFS",
+            "configs": [
+              {
+                "name": "process_swap_memory_thresholds",
+                "value": "{\"warning\":\"never\",\"critical\":\"never\"}"
+              },
+              {
+                "name": "heap_dump_directory_free_space_absolute_thresholds",
+                "value": "{\"warning\":\"never\",\"critical\":\"never\"}"
+              },
+              {
+                "name": "oom_heap_dump_enabled",
+                "value": "false"
+              }
+            ],
+            "base": true
+          }
+        ]
+      },
+      {
+        "refName": "hms",
+        "serviceType": "HIVE",
+        "displayName": "Hive Metastore",
+        "roleConfigGroups": [
+          {
+            "refName": "hms-GATEWAY-BASE",
+            "roleType": "GATEWAY",
+            "base": true
+          },
+          {
+            "refName": "hms-HIVEMETASTORE-BASE",
+            "roleType": "HIVEMETASTORE",
+            "configs": [
+              {
+                "name": "process_swap_memory_thresholds",
+                "value": "{\"warning\":\"never\",\"critical\":\"never\"}"
+              },
+              {
+                "name": "heap_dump_directory_free_space_absolute_thresholds",
+                "value": "{\"warning\":\"never\",\"critical\":\"never\"}"
+              },
+              {
+                "name": "hive_metastore_java_heapsize",
+                "value": "8589934592"
+              },
+              {
+                "name": "hive_metastore_server_max_message_size",
+                "value": "2147483647"
+              },
+              {
+                "name": "oom_heap_dump_enabled",
+                "value": "false"
+              }
+            ],
+            "base": true
+          }
+        ]
+      },
+      {
+        "refName": "hive",
+        "serviceType": "HIVE_ON_TEZ",
+        "displayName": "Hive",
+        "serviceConfigs": [
+          {
+            "name": "hive_service_config_safety_valve",
+            "value": "<property><name>fs.s3a.ssl.channel.mode</name><value>openssl</value></property><property><name>hive.txn.acid.dir.cache.duration</name><value>0</value></property>"
+          }
+        ],
+        "roleConfigGroups": [
+          {
+            "refName": "hive-GATEWAY-BASE",
+            "roleType": "GATEWAY",
+            "base": true
+          },
+          {
+            "refName": "hive-HIVESERVER2-BASE",
+            "roleType": "HIVESERVER2",
+            "base": true,
+            "configs": [
+              {
+                "name": "hive_server2_transport_mode",
+                "value": "http"
+              },
+              {
+                "name": "hiveserver2_mv_files_thread",
+                "value": 20
+              },
+              {
+                "name": "hiveserver2_load_dynamic_partitions_thread_count",
+                "value": 20
+              },
+              {
+                "name": "hiveserver2_java_heapsize",
+                "value": "8589934592"
+              },
+              {
+                "name": "process_swap_memory_thresholds",
+                "value": "{\"warning\":\"never\",\"critical\":\"never\"}"
+              },
+              {
+                "name": "heap_dump_directory_free_space_absolute_thresholds",
+                "value": "{\"warning\":\"never\",\"critical\":\"never\"}"
+              },
+              {
+                "name": "oom_heap_dump_enabled",
+                "value": "false"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "refName": "hue",
+        "serviceType": "HUE",
+        "serviceConfigs": [
+          {
+            "name": "hue_service_safety_valve",
+            "value": "[desktop]\napp_blacklist=spark,zookeeper,hbase,impala,search,sqoop,security,pig"
+          }
+        ],
+        "roleConfigGroups": [
+          {
+            "refName": "hue-HUE_SERVER-BASE",
+            "roleType": "HUE_SERVER",
+            "base": true,
+            "configs": [
+              {
+                "name": "hue_server_hue_safety_valve",
+                "value": "[aws]\nhas_iam_detection=true\n[[aws_accounts]]\n[[[default]]]\nregion=us-east-1"
+              }
+            ]
+          },
+          {
+            "refName": "hue-HUE_LOAD_BALANCER-BASE",
+            "roleType": "HUE_LOAD_BALANCER",
+            "base": true
+          }
+        ]
+      },
+      {
+        "refName": "livy",
+        "serviceType": "LIVY",
+        "roleConfigGroups": [
+          {
+            "refName": "livy-GATEWAY-BASE",
+            "roleType": "GATEWAY",
+            "base": true
+          },
+          {
+            "refName": "livy-LIVY_SERVER-BASE",
+            "roleType": "LIVY_SERVER",
+            "configs": [
+              {
+                "name": "livy_max_heapsize",
+                "value": "8589934592"
+              },
+              {
+                "name": "process_swap_memory_thresholds",
+                "value": "{\"warning\":\"never\",\"critical\":\"never\"}"
+              },
+              {
+                "name": "oom_heap_dump_enabled",
+                "value": "false"
+              }
+            ],
+            "base": true
+          }
+        ]
+      },
+      {
+        "refName": "sqoop",
+        "serviceType": "SQOOP_CLIENT",
+        "roleConfigGroups": [
+          {
+            "refName": "sqoop-SQOOP_CLIENT-GATEWAY-BASE",
+            "roleType": "GATEWAY",
+            "configs": [],
+            "base": true
+          }
+        ]
+      },
+      {
+        "refName": "yarn",
+        "serviceType": "YARN",
+        "serviceConfigs": [
+          {
+            "name": "yarn_admin_acl",
+            "value": "yarn,hive,hdfs,mapred"
+          },
+          {
+            "name": "yarn_service_mapred_safety_valve",
+            "value": "<property><name>mapreduce.fileoutputcommitter.algorithm.version</name><value>1</value></property><property><name>mapreduce.input.fileinputformat.list-status.num-threads</name><value>100</value></property>"
+          }
+        ],
+        "roleConfigGroups": [
+          {
+            "refName": "yarn-RESOURCEMANAGER-BASE",
+            "roleType": "RESOURCEMANAGER",
+            "base": true,
+            "configs": [
+              {
+                "name": "resourcemanager_config_safety_valve",
+                "value": "<property><name>yarn.scheduler.configuration.store.class</name><value>zk</value></property>"
+              },
+              {
+                "name": "yarn_resourcemanager_scheduler_class",
+                "value": "org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler"
+              },
+              {
+                "name": "yarn_scheduler_capacity_resource_calculator",
+                "value": "org.apache.hadoop.yarn.util.resource.DefaultResourceCalculator"
+              },
+              {
+                "name": "resourcemanager_capacity_scheduler_configuration",
+                "value": "<configuration><property><name>yarn.scheduler.capacity.root.queues</name><value>default</value></property><property><name>yarn.scheduler.capacity.root.capacity</name><value>100</value></property><property><name>yarn.scheduler.capacity.root.default.capacity</name><value>100</value></property><property><name>yarn.scheduler.capacity.root.acl_submit_applications</name><value> </value></property><property><name>yarn.scheduler.capacity.root.acl_administer_queue</name><value> </value></property><property><name>yarn.scheduler.capacity.root.default.acl_submit_applications</name><value>*</value></property><property><name>yarn.scheduler.capacity.root.default.minimum-user-limit-percent</name><value>100</value></property><property><name>yarn.scheduler.capacity.maximum-am-resource-percent</name><value>0.33</value></property><property><name>yarn.scheduler.capacity.node-locality-delay</name><value>0</value></property><property><name>yarn.scheduler.capacity.schedule-asynchronously.maximum-threads</name><value>1</value></property><property><name>yarn.scheduler.capacity.schedule-asynchronously.scheduling-interval-ms</name><value>10</value></property></configuration>"
+              },
+              {
+                "name": "heap_dump_directory_free_space_absolute_thresholds",
+                "value": "{\"warning\":\"never\",\"critical\":\"never\"}"
+              },
+              {
+                "name": "process_swap_memory_thresholds",
+                "value": "{\"warning\":\"never\",\"critical\":\"never\"}"
+              },
+              {
+                "name": "yarn_scheduler_maximum_allocation_vcores",
+                "value": "12"
+              },
+              {
+                "name": "yarn_scheduler_maximum_allocation_mb",
+                "value": "92160"
+              },
+              {
+                "name": "oom_heap_dump_enabled",
+                "value": "false"
+              },
+              {
+                "name": "resource_manager_java_heapsize",
+                "value": "17179869184"
+              }
+            ]
+          },
+          {
+            "refName": "yarn-NODEMANAGER-WORKER",
+            "roleType": "NODEMANAGER",
+            "configs": [
+              {
+                "name": "heap_dump_directory_free_space_absolute_thresholds",
+                "value": "{\"warning\":\"never\",\"critical\":\"never\"}"
+              },
+              {
+                "name": "process_swap_memory_thresholds",
+                "value": "{\"warning\":\"never\",\"critical\":\"never\"}"
+              },
+              {
+                "name": "yarn_nodemanager_resource_cpu_vcores",
+                "value": "28"
+              },
+              {
+                "name": "yarn_nodemanager_resource_memory_mb",
+                "value": "225280"
+              },
+              {
+                "name": "oom_heap_dump_enabled",
+                "value": "false"
+              },
+              {
+                "name": "node_manager_java_heapsize",
+                "value": "4294967296"
+              }
+            ],
+            "base": false
+          },
+          {
+            "refName": "yarn-NODEMANAGER-COMPUTE",
+            "roleType": "NODEMANAGER",
+            "configs": [
+              {
+                "name": "heap_dump_directory_free_space_absolute_thresholds",
+                "value": "{\"warning\":\"never\",\"critical\":\"never\"}"
+              },
+              {
+                "name": "yarn_nodemanager_resource_cpu_vcores",
+                "value": "30"
+              },
+              {
+                "name": "process_swap_memory_thresholds",
+                "value": "{\"warning\":\"never\",\"critical\":\"never\"}"
+              },
+              {
+                "name": "yarn_nodemanager_resource_memory_mb",
+                "value": "245760"
+              },
+              {
+                "name": "oom_heap_dump_enabled",
+                "value": "false"
+              },
+              {
+                "name": "node_manager_java_heapsize",
+                "value": "4294967296"
+              }
+            ],
+            "base": false
+          },
+          {
+            "refName": "yarn-JOBHISTORY-BASE",
+            "roleType": "JOBHISTORY",
+            "configs": [
+              {
+                "name": "oom_heap_dump_enabled",
+                "value": "false"
+              },
+              {
+                "name": "process_swap_memory_thresholds",
+                "value": "{\"warning\":\"never\",\"critical\":\"never\"}"
+              },
+              {
+                "name": "mr2_jobhistory_java_heapsize",
+                "value": "4294967296"
+              },
+              {
+                "name": "heap_dump_directory_free_space_absolute_thresholds",
+                "value": "{\"warning\":\"never\",\"critical\":\"never\"}"
+              }
+            ],
+            "base": true
+          },
+          {
+            "refName": "yarn-GATEWAY-BASE",
+            "roleType": "GATEWAY",
+            "base": true,
+            "configs": [
+              {
+                "name": "oom_heap_dump_enabled",
+                "value": "false"
+              },
+              {
+                "name": "mapreduce_client_env_safety_valve",
+                "value": "HADOOP_OPTS=\"-Dorg.wildfly.openssl.path=/usr/lib64 ${HADOOP_OPTS}\""
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "refName": "spark_on_yarn",
+        "serviceType": "SPARK_ON_YARN",
+        "roleConfigGroups": [
+          {
+            "refName": "spark_on_yarn-SPARK_YARN_HISTORY_SERVER-BASE",
+            "roleType": "SPARK_YARN_HISTORY_SERVER",
+            "base": true,
+            "configs": [
+              {
+                "name": "oom_heap_dump_enabled",
+                "value": "false"
+              },
+              {
+                "name": "history_server_max_heapsize",
+                "value": "8589934592"
+              }
+            ]
+          },
+          {
+            "refName": "spark_on_yarn-GATEWAY-BASE",
+            "roleType": "GATEWAY",
+            "base": true,
+            "configs": [
+              {
+                "name": "oom_heap_dump_enabled",
+                "value": "false"
+              },
+              {
+                "name": "spark-conf/spark-defaults.conf_client_config_safety_valve",
+                "value": "spark.hadoop.fs.s3a.ssl.channel.mode=openssl\nspark.hadoop.mapreduce.fileoutputcommitter.algorithm.version=1"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "refName": "tez",
+        "serviceType": "TEZ",
+        "serviceConfigs": [
+          {
+            "name": "yarn_service",
+            "ref": "yarn"
+          },
+          {
+            "name": "tez.am.container.reuse.non-local-fallback.enabled",
+            "value": "true"
+          },
+          {
+            "name": "tez.am.container.reuse.locality.delay-allocation-millis",
+            "value": "0"
+          },
+          {
+            "name": "tez.am.launch.cmd-opts",
+            "value": "-XX:+PrintGCDetails -verbose:gc -XX:+UseNUMA -XX:+UseG1GC -XX:+ResizeTLAB"
+          },
+          {
+            "name": "tez.task.launch.cmd-opts",
+            "value": "-XX:+PrintGCDetails -verbose:gc -XX:+UseNUMA -XX:+UseG1GC -XX:+ResizeTLAB"
+          },
+          {
+            "name": "tez.grouping.split-waves",
+            "value": 1.4
+          },
+          {
+            "name": "tez.grouping.min-size",
+            "value": 268435456
+          },
+          {
+            "name": "tez.grouping.max-size",
+            "value": 268435456
+          }
+        ],
+        "roleConfigGroups": [
+          {
+            "refName": "tez-GATEWAY-BASE",
+            "roleType": "GATEWAY",
+            "base": true
+          }
+        ]
+      },
+      {
+        "refName": "das",
+        "serviceType": "DAS",
+        "roleConfigGroups": [
+          {
+            "refName": "das-DAS_WEBAPP",
+            "roleType": "DAS_WEBAPP",
+            "base": true,
+            "configs": [
+              {
+                "name": "data_analytics_studio_admin_users",
+                "value": "*"
+              },
+              {
+                "name": "oom_heap_dump_enabled",
+                "value": "false"
+              }
+            ]
+          },
+          {
+            "refName": "das-DAS_EVENT_PROCESSOR",
+            "roleType": "DAS_EVENT_PROCESSOR",
+            "base": true,
+            "configs": [
+              {
+                "name": "oom_heap_dump_enabled",
+                "value": "false"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "refName": "knox",
+        "roleConfigGroups": [
+          {
+            "base": true,
+            "refName": "knox-KNOX_GATEWAY-BASE",
+            "roleType": "KNOX_GATEWAY",
+            "configs": [
+              {
+                "name": "oom_heap_dump_enabled",
+                "value": "false"
+              }
+            ]
+          }
+        ],
+        "serviceType": "KNOX"
+      },
+      {
+        "refName": "zeppelin",
+        "serviceType": "ZEPPELIN",
+        "serviceConfigs": [
+          {
+            "name": "yarn_service",
+            "ref": "yarn"
+          },
+          {
+            "name": "hdfs_service",
+            "ref": "hdfs"
+          },
+          {
+            "name": "spark_on_yarn_service",
+            "ref": "spark_on_yarn"
+          }
+        ],
+        "roleConfigGroups": [
+          {
+            "refName": "zeppelin-ZEPPELIN_SERVER-BASE",
+            "roleType": "ZEPPELIN_SERVER",
+            "configs": [
+              {
+                "name": "oom_heap_dump_enabled",
+                "value": "false"
+              },
+              {
+                "name": "zeppelin-conf/zeppelin-env.sh_role_safety_valve",
+                "value": "export ZEPPELIN_MEM=\"-Xmx12000m -XX:MaxPermSize=6144m\"\nexport ZEPPELIN_INTP_MEM=\"-Xms2048m -Xmx5120m\""
+              }
+            ],
+            "base": true
+          }
+        ]
+      },
+      {
+        "refName": "queuemanager",
+        "serviceType": "QUEUEMANAGER",
+        "serviceConfigs": [
+          {
+            "name": "kerberos.auth.enabled",
+            "value": "true"
+          }
+        ],
+        "roleConfigGroups": [
+          {
+            "refName": "yarn-QUEUEMANAGER_WEBAPP-BASE",
+            "roleType": "QUEUEMANAGER_WEBAPP",
+            "configs": [
+              {
+                "name": "oom_heap_dump_enabled",
+                "value": "false"
+              }
+            ],
+            "base": true
+          },
+          {
+            "refName": "yarn-QUEUEMANAGER_STORE-BASE",
+            "roleType": "QUEUEMANAGER_STORE",
+            "configs": [
+              {
+                "name": "oom_heap_dump_enabled",
+                "value": "false"
+              }
+            ],
+            "base": true
+          }
+        ]
+      }
+    ],
+    "hostTemplates": [
+      {
+        "refName": "gateway",
+        "cardinality": 1,
+        "roleConfigGroupsRefNames": [
+          "hdfs-GATEWAY-BASE",
+          "hive-GATEWAY-BASE",
+          "hms-GATEWAY-BASE",
+          "livy-GATEWAY-BASE",
+          "spark_on_yarn-GATEWAY-BASE",
+          "tez-GATEWAY-BASE",
+          "yarn-GATEWAY-BASE"
+        ]
+      },
+      {
+        "refName": "master",
+        "cardinality": 2,
+        "roleConfigGroupsRefNames": [
+          "hdfs-FAILOVERCONTROLLER-BASE",
+          "hdfs-NAMENODE-BASE",
+          "hdfs-GATEWAY-BASE",
+          "hdfs-HTTPFS-BASE",
+          "hive-GATEWAY-BASE",
+          "hive-HIVESERVER2-BASE",
+          "hms-GATEWAY-BASE",
+          "hms-HIVEMETASTORE-BASE",
+          "hue-HUE_LOAD_BALANCER-BASE",
+          "hue-HUE_SERVER-BASE",
+          "knox-KNOX_GATEWAY-BASE",
+          "livy-GATEWAY-BASE",
+          "spark_on_yarn-GATEWAY-BASE",
+          "tez-GATEWAY-BASE",
+          "yarn-RESOURCEMANAGER-BASE",
+          "hdfs-JOURNALNODE-BASE",
+          "zookeeper-SERVER-BASE",
+          "yarn-GATEWAY-BASE"
+        ]
+      },
+      {
+        "refName": "manager",
+        "cardinality": 1,
+        "roleConfigGroupsRefNames": [
+          "hdfs-BALANCER-BASE",
+          "hdfs-GATEWAY-BASE",
+          "hive-GATEWAY-BASE",
+          "hms-GATEWAY-BASE",
+          "livy-GATEWAY-BASE",
+          "livy-LIVY_SERVER-BASE",
+          "spark_on_yarn-GATEWAY-BASE",
+          "spark_on_yarn-SPARK_YARN_HISTORY_SERVER-BASE",
+          "tez-GATEWAY-BASE",
+          "yarn-JOBHISTORY-BASE",
+          "sqoop-SQOOP_CLIENT-GATEWAY-BASE",
+          "zeppelin-ZEPPELIN_SERVER-BASE",
+          "das-DAS_EVENT_PROCESSOR",
+          "das-DAS_WEBAPP",
+          "knox-KNOX_GATEWAY-BASE",
+          "hdfs-JOURNALNODE-BASE",
+          "zookeeper-SERVER-BASE",
+          "yarn-QUEUEMANAGER_WEBAPP-BASE",
+          "yarn-QUEUEMANAGER_STORE-BASE",
+          "yarn-GATEWAY-BASE"
+        ]
+      },
+      {
+        "refName": "worker",
+        "cardinality": 3,
+        "roleConfigGroupsRefNames": [
+          "hdfs-DATANODE-BASE",
+          "hdfs-GATEWAY-BASE",
+          "hive-GATEWAY-BASE",
+          "hms-GATEWAY-BASE",
+          "livy-GATEWAY-BASE",
+          "spark_on_yarn-GATEWAY-BASE",
+          "tez-GATEWAY-BASE",
+          "yarn-NODEMANAGER-WORKER",
+          "yarn-GATEWAY-BASE"
+        ]
+      },
+      {
+        "refName": "compute",
+        "cardinality": 0,
+        "roleConfigGroupsRefNames": [
+          "hdfs-GATEWAY-BASE",
+          "hive-GATEWAY-BASE",
+          "hms-GATEWAY-BASE",
+          "livy-GATEWAY-BASE",
+          "spark_on_yarn-GATEWAY-BASE",
+          "tez-GATEWAY-BASE",
+          "yarn-NODEMANAGER-COMPUTE",
+          "yarn-GATEWAY-BASE"
+        ]
+      }
+    ]
+  }

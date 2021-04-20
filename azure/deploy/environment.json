@@ -1,0 +1,43 @@
+{
+    "environmentName": "vkacdpdev",
+    "credentialName": "vkarthikeyan-az",
+    "region": "East US",
+    "resourceGroupName": "vkarthikeyan",
+    "securityAccess": {
+        "securityGroupIdForKnox": "cdp-nsg-allow-all",
+        "defaultSecurityGroupId": "cdp-nsg-allow-all"
+    },
+    "usePublicIp": false,
+    "publicKey": "vkarthikeyan-ssh-key",
+    "logStorage": {
+        "storageLocationBase": "abfs://cdpvkar.blob.core.windows.net/logs",
+        "managedIdentity": "cdpvkar-LoggerIdentity"
+    },
+    "existingNetworkParams": {
+        "networkId": "cdp-vnet",
+        "resourceGroupName": "vkarthikeyan",
+        "subnetIds": [
+            "cdp-prv-subnet4",
+            "cdp-prv-subnet5",
+            "cdp-prv-subnet6"
+        ]
+    },
+    "description": "Description of the environment",
+    "enableTunnel": true,
+    "workloadAnalytics": false,
+    "reportDeploymentLogs": false,
+    "freeIpa": {
+        "instanceCountByGroup": 1
+    },
+    "tags": [
+        {
+            "key": "project",
+            "value": "self"
+        },
+        {
+            "key": "owner",
+            "value": "vkarthikeyan@cloudera.com"
+        }
+    ],
+    "proxyConfigName": ""
+}

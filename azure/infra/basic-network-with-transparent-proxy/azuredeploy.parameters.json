@@ -6,10 +6,10 @@
       "value": "cdp"
     },
     "AllowIPAddress": {
-      "value": "71.135.69.90/32"
+      "value": "0.0.0.0/0"
     },
     "deployVMinPrivateSubnet": {
-      "value": false
+      "value": true
     },
     "resourceTags": {
       "value": {

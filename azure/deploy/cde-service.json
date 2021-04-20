@@ -1,0 +1,20 @@
+{
+    "name": "vkacdedev",
+    "env": "vkacdpdev",
+    "instanceType": "r5.4xlarge",
+    "minimumInstances": 1,
+    "maximumInstances": 50,
+    "minimumSpotInstances": 0,
+    "maximumSpotInstances": 50,
+    "initialInstances": 0,
+    "initialSpotInstances": 0,
+    "rootVolumeSize": 500,
+    "enablePublicEndpoint": false,
+    "enableWorkloadAnalytics": true,
+    "useSsd": false,
+    "tags": {
+            "project": "self",
+            "owner": "vkarthikeyan@cloudera.com"
+    }
+}
+
