@@ -29,3 +29,6 @@ systemctl restart squid && systemctl enable squid
 iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 3129
 iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 3130
 iptables -t nat -A POSTROUTING -s 10.0.0.0/8 -p udp --dport 123 -j MASQUERADE
+
+### CCM Traffic
+iptables -t nat -A POSTROUTING -s 10.0.0.0/8 -p tcp --dport 6000:6049 -j MASQUERADE

@@ -1,11 +1,12 @@
 {
-  "datalakeName": "vkacdpdevdl",
-  "environmentName": "vkacdpdev",
+  "datalakeName": "cdpvkazuredl",
+  "environmentName": "cdpvkazure",
   "cloudProviderConfiguration": {
-    "instanceProfile": "arn:aws:iam::123456789012:instance-profile/vkarthikeyan-cdp-data-access-instance-profile",
-    "storageBucketLocation": "s3a://vkarthikeyan-cdp/data"
+    "managedIdentity": "/subscriptions/da35404a-2612-4419-baef-45fcdce6045e/resourcegroups/vkarthikeyan/providers/Microsoft.ManagedIdentity/userAssignedIdentities/cdpvkar-AssumerIdentity",
+    "storageLocation": "abfs://data@cdpvkar.dfs.core.windows.net"
   },
   "scale": "LIGHT_DUTY",
+  "enableRangerRaz": true,
   "tags": [
     {
       "key": "project",
@@ -13,8 +14,9 @@
     },
     {
       "key": "owner",
-      "value": "vkarthikeyan@cloudera.com"
+      "value": "Vijay Anand Karthikeyan"
     }
   ],
-  "runtime": "7.2.8"
+  "runtime": "7.2.8",
+  "databaseAvailabilityType": "NONE"
 }

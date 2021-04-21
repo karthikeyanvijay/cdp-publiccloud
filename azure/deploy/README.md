@@ -18,26 +18,26 @@ Use the following steps to deploy the environment. [CDP CLI](https://docs.cloude
     ```
 * Create Datalake
     ```
-    cdp datalake create-aws-datalake  --cli-input-json file://datalake.json
+    cdp datalake create-azure-datalake  --cli-input-json file://datalake.json
     ```
 * Grant permissions
     ```
-    env_crn=`cdp environments describe-environment --environment-name vkacdpdev | jq -r .environment.crn`
+    env_crn=`cdp environments describe-environment --environment-name cdpvkazure | jq -r .environment.crn`
 
     # Grant access to Admins
-    for role in `cdp iam list-resource-roles | jq -r .resourceRoles[].crn | sed -e "s/\r//g"`
+    for role in `cdp iam list-resource-roles | jq -r .resourceRoles[].crn`
     do
     cdp iam assign-group-resource-role  \
-        --group-name cloudera-admins   \
+        --group-name ps-sandbox-aws-env-user-group   \
         --resource-role-crn $role   \
         --resource-crn $env_crn
     done
 
     # Grant access to users
-    for role in `cdp iam list-resource-roles | jq -r .resourceRoles[].crn | sed -e "s/\r//g" | grep 'User$'`
+    for role in `cdp iam list-resource-roles | jq -r .resourceRoles[].crn | grep 'User$'`
     do
     cdp iam assign-group-resource-role  \
-        --group-name cloudera-users   \
+        --group-name sandbox-default-ps-admin   \
         --resource-role-crn $role   \
         --resource-crn $env_crn
     done
@@ -51,13 +51,13 @@ Use the following steps to deploy the environment. [CDP CLI](https://docs.cloude
     envname="vkacdpdev"
 
     env_crn=`cdp environments describe-environment --environment-name $envname | jq -r .environment.crn`
-    envuserrole=`cdp iam list-resource-roles | jq -r .resourceRoles[].crn | sed -e "s/\r//g" | grep 'EnvironmentUser$'`
+    envuserrole=`cdp iam list-resource-roles | jq -r .resourceRoles[].crn | grep 'EnvironmentUser$'`
 
     cdp iam assign-machine-user-resource-role \
         --machine-user-name $machineusername \
         --resource-role-crn $envuserrole   \
         --resource-crn $env_crn
-    deuserrole=`cdp iam list-resource-roles | jq -r .resourceRoles[].crn | sed -e "s/\r//g" | grep 'DEUser$'` 
+    deuserrole=`cdp iam list-resource-roles | jq -r .resourceRoles[].crn | grep 'DEUser$'` 
     cdp iam assign-machine-user-resource-role \
         --machine-user-name $machineusername \
         --resource-role-crn $deuserrole   \
@@ -84,7 +84,14 @@ Use the following steps to deploy the environment. [CDP CLI](https://docs.cloude
 * To create a datahub cluster, run the following command
     ```
     cdp datahub create-aws-cluster --cli-input-json file://datahub-etl.json
+
     ```
+
+## Cloudera Data Warehouse
+* 
+```
+cdp dw create-cluster --cli-input-json file://cdw-cluster.json
+```
 
 ## Cloudera Data Engineering
 * Enable service

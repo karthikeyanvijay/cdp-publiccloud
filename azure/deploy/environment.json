@@ -1,17 +1,16 @@
 {
-    "environmentName": "vkacdpdev",
-    "credentialName": "vkarthikeyan-az",
+    "environmentName": "cdpvkazure",
+    "credentialName": "vkarthikeyan-azure",
     "region": "East US",
     "resourceGroupName": "vkarthikeyan",
     "securityAccess": {
-        "securityGroupIdForKnox": "cdp-nsg-allow-all",
-        "defaultSecurityGroupId": "cdp-nsg-allow-all"
+        "cidr": "0.0.0.0/0"
     },
     "usePublicIp": false,
-    "publicKey": "vkarthikeyan-ssh-key",
+    "publicKey": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDSFnNLPVbqD5+50S8j2M/SvTgwv8cBTg2hwaMgjbScA6e2xtAk9VIzD9iMBNCX2wM1Fdu54DiKWsVSCpTHCIXb6dBTCFotkeM1h9+1Adq82+N0XqNXHjaOJP8oiRhit8AzsYnwjcsZWSfHDXqwp0impA2u3+H6IyL1PnPr7deICKaw3yLO3dcC3PbUS1phfaYUMUI5kdZsh8oV7KZYNzpGhaJ4tbvRsJMA1sLcxZV7FAiU5famgHI19oINqo5E6Yo52kAlCx+2PA6OVZ8BVHPqLCGNSTuTH5IxjUCj5AKsnqUtzg/ccX0hZwstHDz4tVIR6T9z3r4jOpfCi5tpsB7DSXYhus14FsOmfHOGjoVt9mRxGWJNI4t83fptaHxMDRAGPno02BBpZb4QK/4l93UDUzVolGupdTtC4QZhcX0nvR8LaaApW7iZHpJa1aATL+J6UrK4QflbLM3TdCVrQ8C7vwYrLuWqBmjujRQi/3MZD6pQEtLZ/hky78FnQbSLHYs= vkarthikeyan@10430",
     "logStorage": {
-        "storageLocationBase": "abfs://cdpvkar.blob.core.windows.net/logs",
-        "managedIdentity": "cdpvkar-LoggerIdentity"
+        "storageLocationBase": "abfs://logs@cdpvkar.dfs.core.windows.net",
+        "managedIdentity": "/subscriptions/da35404a-2612-4419-baef-45fcdce6045e/resourcegroups/vkarthikeyan/providers/Microsoft.ManagedIdentity/userAssignedIdentities/cdpvkar-LoggerIdentity"
     },
     "existingNetworkParams": {
         "networkId": "cdp-vnet",
