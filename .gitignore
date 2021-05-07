@@ -1,3 +1,4 @@
 .DS_Store
 samlresponse.log
 config_file
+*.pem
