@@ -1,0 +1,794 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "apiProfile":"2019-03-01-hybrid",
+  "parameters": {
+    "namePrefix": {
+      "type": "string",
+      "defaultValue": "cdp",
+      "metadata": {
+        "description": "Prefix for all resource names"
+      }
+    },
+    "AllowIPAddress": {
+      "type": "string",
+      "defaultValue": "0.0.0.0/0",
+      "metadata": {
+        "description": "IP CIDR to allow connections to public subnet"
+      }
+    },
+    "deployVMinPrivateSubnet": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Create a server in the private subnet"
+      }
+    },
+    "resourceTags": {
+        "type": "object",
+        "defaultValue": {
+            "Owner": "Vijay Anand Karthikeyan",
+            "Project": "CDP"
+        }
+    },
+    "vmAdminPassword": {
+      "type": "string",
+      "defaultValue": "DefaultPassW0rd$",
+      "metadata": {
+        "description": "Admin password for VMs"
+      }
+    },
+    "vnetAddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.10.0.0/16",
+      "metadata": {
+        "description": "Address prefix"
+      }
+    },
+    "azureFirewallSubnetPrefix": {
+      "type": "string",
+      "defaultValue": "10.10.1.0/24",
+      "metadata": {
+        "description": "Subnet 1 Prefix"
+      }
+    },
+    "nextHopIP": {
+      "type": "string",
+      "defaultValue": "10.10.1.4",
+      "metadata": {
+        "description": "Subnet 1 Prefix"
+      }
+    },
+    "subnet1Prefix": {
+      "type": "string",
+      "defaultValue": "10.10.11.0/24",
+      "metadata": {
+        "description": "Subnet 1 Prefix"
+      }
+    },
+    "subnet2Prefix": {
+      "type": "string",
+      "defaultValue": "10.10.12.0/24",
+      "metadata": {
+        "description": "Subnet 2 Prefix"
+      }
+    },
+    "subnet3Prefix": {
+      "type": "string",
+      "defaultValue": "10.10.13.0/24",
+      "metadata": {
+        "description": "Subnet 2 Prefix"
+      }
+    },
+    "subnet4Prefix": {
+      "type": "string",
+      "defaultValue": "10.10.21.0/24",
+      "metadata": {
+        "description": "Subnet 4 Prefix"
+      }
+    },
+    "subnet5Prefix": {
+      "type": "string",
+      "defaultValue": "10.10.22.0/24",
+      "metadata": {
+        "description": "Subnet 5 Prefix"
+      }
+    },
+    "subnet6Prefix": {
+      "type": "string",
+      "defaultValue": "10.10.23.0/24",
+      "metadata": {
+        "description": "Subnet 6 Prefix"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    }
+  },
+  "variables": {
+    "vnetName": "[concat(parameters('namePrefix'), '-vnet')]",
+    "azureFirewallSubnetName": "AzureFirewallSubnet",
+    "subnet1Name": "[concat(parameters('namePrefix'), '-pub-', 'subnet1')]",
+    "subnet2Name": "[concat(parameters('namePrefix'), '-pub-', 'subnet2')]",
+    "subnet3Name": "[concat(parameters('namePrefix'), '-pub-', 'subnet3')]",
+    "subnet4Name": "[concat(parameters('namePrefix'), '-prv-', 'subnet4')]",
+    "subnet5Name": "[concat(parameters('namePrefix'), '-prv-', 'subnet5')]",
+    "subnet6Name": "[concat(parameters('namePrefix'), '-prv-', 'subnet6')]",
+    "publicNSGName": "[concat(parameters('namePrefix'), '-nsg-', 'pub')]",
+    "privateNSGName": "[concat(parameters('namePrefix'), '-nsg-', 'prv')]",
+    "allowAllNSGName": "[concat(parameters('namePrefix'), '-nsg-', 'allow-all')]",
+    "publicRouteTableName": "[concat(parameters('namePrefix'), '-routetbl-pub')]",
+    "privateRouteTableName": "[concat(parameters('namePrefix'), '-routetbl-prv')]",
+    "azfwRouteTableName": "[concat(parameters('namePrefix'), '-routetbl-azfw')]",
+    "server4NICName": "[concat(parameters('namePrefix'), '-nic-server4')]",
+    "bastionNICName": "[concat(parameters('namePrefix'), '-nic-bastion')]",
+    "bastionVMName": "[concat(parameters('namePrefix'), '-vm-bastion')]",
+    "bastionpublicIpAddressName": "[concat(parameters('namePrefix'), '-pubip-bastion')]",
+    "server4VMName": "[concat(parameters('namePrefix'), '-vm-server4')]",
+    "commonManagedIdentityName": "[concat(parameters('namePrefix'), '-mi-common')]",
+    "logAnalyticsWorkspaceName": "[concat(parameters('namePrefix'), '-loganalytics-common')]",
+    "firewallName": "[concat(parameters('namePrefix'), '-azure-firewall')]",
+    "numberOfFirewallPublicIPAddresses": 1,
+    "azfwAvailabilityZones": ["1"],
+    "azfwpublicIPNamePrefix": "[concat(parameters('namePrefix'), '-azfw-pubip')]",
+    "azureFirewallSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets',variables('vnetName'), variables('azureFirewallSubnetName'))]",
+    "azureFirewallSubnetJSON": "[json(format('{{\"id\": \"{0}\"}}', variables('azureFirewallSubnetId')))]",
+    "copy": [
+      {
+        "name": "azureFirewallIpConfigurations",
+        "count": "[variables('numberOfFirewallPublicIPAddresses')]",
+        "input": {
+          "name": "[concat('IpConf', copyIndex('azureFirewallIpConfigurations'))]",
+          "properties": {
+            "subnet": "[if(equals(copyIndex('azureFirewallIpConfigurations'), 0), variables('azureFirewallSubnetJSON'), json('null'))]",
+            "publicIPAddress": {
+              "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('azfwpublicIPNamePrefix'), add(copyIndex('azureFirewallIpConfigurations'), 1)))]"
+            }
+          }
+        }
+      }
+    ],
+    "vmSize": "Standard_B2s",
+    "vmOsDiskType": "Premium_LRS",
+    "adminUsername": "azureuser",
+    "adminPassword": "[parameters('vmAdminPassword')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('vnetName')]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('publicNSGName'))]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('privateNSGName'))]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('allowAllNSGName'))]",
+        "[resourceId('Microsoft.Network/routeTables', variables('publicRouteTableName'))]",
+        "[resourceId('Microsoft.Network/routeTables', variables('privateRouteTableName'))]",
+        "[resourceId('Microsoft.Network/routeTables', variables('azfwRouteTableName'))]"
+      ],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('vnetAddressPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('azureFirewallSubnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('azureFirewallSubnetPrefix')]",
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', variables('azfwRouteTableName'))]"
+              }
+            }
+          },
+          {
+            "name": "[variables('subnet1Name')]",
+            "properties": {
+              "addressPrefix": "[parameters('subnet1Prefix')]",
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', variables('publicRouteTableName'))]"
+              },
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('publicNSGName'))]"
+              }
+            }
+          },
+          {
+            "name": "[variables('subnet2Name')]",
+            "properties": {
+              "addressPrefix": "[parameters('subnet2Prefix')]",
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', variables('publicRouteTableName'))]"
+              },
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('publicNSGName'))]"
+              }
+            }
+          },
+          {
+            "name": "[variables('subnet3Name')]",
+            "properties": {
+              "addressPrefix": "[parameters('subnet3Prefix')]",
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', variables('publicRouteTableName'))]"
+              },
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('publicNSGName'))]"
+              }
+            }
+          },
+          {
+            "name": "[variables('subnet4Name')]",
+            "properties": {
+              "addressPrefix": "[parameters('subnet4Prefix')]",
+              "serviceEndpoints": [
+                {
+                  "service": "Microsoft.Storage"
+                },
+                {
+                  "service": "Microsoft.Sql"
+                }
+              ],
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', variables('privateRouteTableName'))]"
+              },
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('privateNSGName'))]"
+              }
+            }
+          },
+          {
+            "name": "[variables('subnet5Name')]",
+            "properties": {
+              "addressPrefix": "[parameters('subnet5Prefix')]",
+              "serviceEndpoints": [
+                {
+                  "service": "Microsoft.Storage"
+                },
+                {
+                  "service": "Microsoft.Sql"
+                }
+              ],
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', variables('privateRouteTableName'))]"
+              },
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('privateNSGName'))]"
+              }
+            }
+          },
+          {
+            "name": "[variables('subnet6Name')]",
+            "properties": {
+              "addressPrefix": "[parameters('subnet6Prefix')]",
+              "serviceEndpoints": [
+                {
+                  "service": "Microsoft.Storage"
+                },
+                {
+                  "service": "Microsoft.Sql"
+                }
+              ],
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', variables('privateRouteTableName'))]"
+              },
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('privateNSGName'))]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+      "name": "[variables('commonManagedIdentityName')]",
+      "apiVersion": "2018-11-30",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]"
+    },
+    {
+        "type": "Microsoft.OperationalInsights/workspaces",
+        "apiVersion": "2020-10-01",
+        "name": "[variables('logAnalyticsWorkspaceName')]",
+        "location": "[parameters('location')]",
+        "tags": "[parameters('resourceTags')]",
+        "properties": {
+            "sku": {
+                "name": "pergb2018"
+            }
+        },
+        "resources":[
+          {
+            "type": "dataSources",
+            "apiVersion": "2020-08-01",
+            "name": "LINUX_LOGS",
+            "dependsOn": [
+                "[concat('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName'))]"
+            ],
+            "kind": "CustomLog",
+            "properties": {
+                "customLogName": "bastion_ACCESS_LOG",
+                "description": "Queries access.log for bastion proxy",
+                "inputs": [
+                  {
+                      "location": {
+                        "fileSystemLocations": {
+                            "linuxFileTypeLogPaths": [ "/var/log/bastion/access.log" ]
+                        }
+                      },
+                      "recordDelimiter": {
+                        "regexDelimiter": {
+                          "matchIndex": 0,
+                          "numberdGroup": null,
+                          "pattern": "\\n"
+                        }
+                      }
+                  }
+                ],
+                "extractions": [
+                {
+                    "extractionName": "TimeGenerated",
+                    "extractionProperties": {
+                    "dateTimeExtraction": {
+                        "regex": [
+                          {
+                              "matchIndex": 0,
+                              "numberdGroup": null,
+                              "pattern": "((\\d{2})|(\\d{4}))-([0-1]\\d)-(([0-3]\\d)|(\\d))\\s((\\d)|([0-1]\\d)|(2[0-4])):[0-5][0-9]:[0-5][0-9]"
+                          }
+                        ]
+                    }
+                    },
+                    "extractionType": "DateTime"
+                }
+                ]
+            }
+          }
+        ]
+    },
+    {
+      "type": "Microsoft.Network/routeTables",
+      "name": "[variables('azfwRouteTableName')]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
+      "properties": {
+        "routes": [
+            {
+              "name": "route-internet",
+              "properties": {
+                "addressPrefix": "0.0.0.0/0",
+                "nextHopType": "Internet"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/routeTables",
+      "name": "[variables('publicRouteTableName')]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
+      "properties": {
+        "routes": [
+            {
+              "name": "route-internet",
+              "properties": {
+                "addressPrefix": "0.0.0.0/0",
+                "nextHopType": "VirtualAppliance",
+                "nextHopIpAddress": "[parameters('nextHopIP')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/routeTables",
+      "name": "[variables('privateRouteTableName')]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
+      "properties": {
+        "routes": [
+            {
+              "name": "route-internet",
+              "properties": {
+                "addressPrefix": "0.0.0.0/0",
+                "nextHopType": "VirtualAppliance",
+                "nextHopIpAddress": "[parameters('nextHopIP')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2019-08-01",
+      "name": "[variables('privateNSGName')]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
+      "properties": {
+        "securityRules": [
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2019-08-01",
+      "name": "[variables('publicNSGName')]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "allow-all-inbound-for-ip",
+            "properties": {
+              "priority": 1000,
+              "access": "Allow",
+              "direction": "Inbound",
+              "destinationPortRange": "*",
+              "protocol": "*",
+              "sourceAddressPrefix": "[parameters('AllowIPAddress')]",
+              "sourcePortRange": "1024-65535",
+              "destinationAddressPrefix": "*"
+            }
+          },
+          {
+            "name": "allow-all-inbound-vnet",
+            "properties": {
+              "priority": 1001,
+              "access": "Allow",
+              "direction": "Inbound",
+              "destinationPortRange": "*",
+              "protocol": "*",
+              "sourceAddressPrefix": "[parameters('vnetAddressPrefix')]",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2019-08-01",
+      "name": "[variables('allowAllNSGName')]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "allow-all",
+            "properties": {
+              "priority": 1000,
+              "access": "Allow",
+              "direction": "Inbound",
+              "destinationPortRange": "*",
+              "protocol": "*",
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "1024-65535",
+              "destinationAddressPrefix": "*"
+            }
+          },
+          {
+            "name": "allow-all-inbound-vnet",
+            "properties": {
+              "priority": 1001,
+              "access": "Allow",
+              "direction": "Inbound",
+              "destinationPortRange": "*",
+              "protocol": "*",
+              "sourceAddressPrefix": "[parameters('vnetAddressPrefix')]",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "condition": "[parameters('deployVMinPrivateSubnet')]",
+      "apiVersion": "2018-10-01",
+      "name": "[variables('server4NICName')]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
+      "dependsOn": [
+        "[variables('vnetName')]"
+      ],
+      "properties": {
+          "ipConfigurations": [
+              {
+                  "name": "server4-ipconfig-1",
+                  "properties": {
+                      "subnet": {
+                        "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnet4Name'))]"
+                      },
+                      "privateIPAllocationMethod": "Dynamic"
+                  }
+              }
+          ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2020-06-01",
+      "name": "[concat(variables('azfwpublicIPNamePrefix'), add(copyIndex(), 1))]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard"
+      },
+      "copy": {
+        "name": "publicIpCopy",
+        "count": "[variables('numberOfFirewallPublicIPAddresses')]"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "publicIPAddressVersion": "IPv4"
+      }
+    },
+    {
+      "type": "Microsoft.Network/azureFirewalls",
+      "apiVersion": "2020-06-01",
+      "name": "[variables('firewallName')]",
+      "location": "[parameters('location')]",
+      "zones": "[if(equals(length(variables('azfwAvailabilityZones')), 0), json('null'), variables('azfwAvailabilityZones'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+        "publicIpCopy"
+      ],
+      "properties": {
+        "ipConfigurations": "[variables('azureFirewallIpConfigurations')]",
+        "applicationRuleCollections": [
+          {
+            "name": "appRc1",
+            "properties": {
+              "priority": 101,
+              "action": {
+                "type": "Allow"
+              },
+              "rules": [
+                {
+                  "name": "appRule1",
+                  "protocols": [
+                    {
+                      "port": 80,
+                      "protocolType": "http"
+                    },
+                    {
+                      "port": 443,
+                      "protocolType": "https"
+                    }
+                  ],
+                  "targetFqdns": [
+                    "www.microsoft.com"
+                  ],
+                  "sourceAddresses": [
+                    "10.0.2.0/24"
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "networkRuleCollections": [
+          {
+            "name": "netRc1",
+            "properties": {
+              "priority": 200,
+              "action": {
+                "type": "Allow"
+              },
+              "rules": [
+                {
+                  "name": "netRule1",
+                  "protocols": [
+                    "TCP"
+                  ],
+                  "sourceAddresses": [
+                    "10.0.2.0/24"
+                  ],
+                  "destinationAddresses": [
+                    "*"
+                  ],
+                  "destinationPorts": [
+                    "8000-8999"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "condition": "[parameters('deployVMinPrivateSubnet')]",
+      "apiVersion": "2020-12-01",
+      "name": "[variables('server4VMName')]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
+      "dependsOn": [
+          "[concat('Microsoft.Network/networkInterfaces/', variables('server4NICName'))]"
+      ],
+      "properties": {
+          "hardwareProfile": {
+              "vmSize": "[variables('vmSize')]"
+          },
+          "storageProfile": {
+              "osDisk": {
+                  "createOption": "FromImage",
+                  "managedDisk": {
+                      "storageAccountType": "[variables('vmOsDiskType')]"
+                  }
+              },
+              "imageReference": {
+                  "publisher": "RedHat",
+                  "offer": "RHEL",
+                  "sku": "7.8",
+                  "version": "latest"
+              }
+          },
+          "networkProfile": {
+              "networkInterfaces": [
+                  {
+                      "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('server4NICName'))]"
+                  }
+              ]
+          },
+          "osProfile": {
+              "computerName": "server4",
+              "adminUsername": "[variables('adminUsername')]",
+              "adminPassword": "[variables('adminPassword')]",
+              "linuxConfiguration": {
+                  "patchSettings": {
+                      "patchMode": "ImageDefault"
+                  }
+              }
+          }
+      }
+    },
+    {
+      "type": "Microsoft.Network/publicIpAddresses",
+      "name": "[variables('bastionpublicIpAddressName')]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
+      "sku": {
+          "name": "Standard"
+      },
+      "properties": {
+          "publicIpAllocationMethod": "Static"
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2018-10-01",
+      "name": "[variables('bastionNICName')]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
+      "dependsOn": [
+        "[variables('vnetName')]",
+        "[variables('bastionpublicIpAddressName')]"
+      ],
+      "properties": {
+          "ipConfigurations": [
+              {
+                  "name": "bastion-ipconfig-1",
+                  "properties": {
+                      "subnet": {
+                        "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnet1Name'))]"
+                      },
+                      "privateIPAddress": "10.10.11.4",
+                      "privateIPAllocationMethod": "Static",
+                      "publicIpAddress": {
+                        "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('bastionpublicIpAddressName'))]"
+                    }
+                  }
+              }
+          ],
+          "enableIPForwarding": true
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2020-12-01",
+      "name": "[variables('bastionVMName')]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
+      "identity": {
+          "type": "userAssigned",
+          "userAssignedIdentities": {
+              "[resourceID('Microsoft.ManagedIdentity/userAssignedIdentities/',variables('commonManagedIdentityName'))]": {}
+          }
+      },
+      "dependsOn": [
+          "[concat('Microsoft.Network/networkInterfaces/', variables('bastionNICName'))]",
+           "[concat('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('commonManagedIdentityName'))]",
+           "[concat('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName'))]"
+      ],
+      "properties": {
+          "hardwareProfile": {
+              "vmSize": "[variables('vmSize')]"
+          },
+          "storageProfile": {
+              "osDisk": {
+                  "createOption": "FromImage",
+                  "managedDisk": {
+                      "storageAccountType": "[variables('vmOsDiskType')]"
+                  }
+              },
+              "imageReference": {
+                  "publisher": "OpenLogic",
+                  "offer": "CentOS",
+                  "sku": "7-CI",
+                  "version": "latest"
+              }
+          },
+          "networkProfile": {
+              "networkInterfaces": [
+                  {
+                      "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('bastionNICName'))]"
+                  }
+              ]
+          },
+          "osProfile": {
+              "computerName": "bastion",
+              "adminUsername": "[variables('adminUsername')]",
+              "adminPassword": "[variables('adminPassword')]",
+              "linuxConfiguration": {
+                  "patchSettings": {
+                      "patchMode": "ImageDefault"
+                  }
+              }
+          }
+      },
+      "resources":[
+        {
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "apiVersion": "2015-06-15",
+          "name": "[concat(variables('bastionVMName'),'/CustomScript')]",
+          "location": "[parameters('location')]",
+          "tags": "[parameters('resourceTags')]",
+          "dependsOn": [
+              "[concat('Microsoft.Compute/virtualMachines/', variables('bastionVMName'))]"
+          ],
+          "properties": {
+            "publisher": "Microsoft.Azure.Extensions",
+            "type": "CustomScript",
+            "typeHandlerVersion": "2.0",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+                "fileUris": [
+              ],
+              "commandToExecute": "echo `date`"
+            },
+            "protectedSettings": {
+            }
+          }
+        },
+        {
+            "type": "extensions",
+            "apiVersion": "2018-10-01",
+            "name": "DependencyAgentLinux",
+            "location": "[parameters('location')]",
+            "tags": "[parameters('resourceTags')]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', variables('bastionVMName'))]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Monitoring.DependencyAgent",
+                "type": "DependencyAgentLinux",
+                "typeHandlerVersion": "9.10",
+                "autoUpgradeMinorVersion": true,
+                "settings": {}
+            }
+        }
+      ]
+    }
+  ]
+}
