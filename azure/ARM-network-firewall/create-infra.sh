@@ -7,9 +7,6 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
-echo "Work in progress..exiting"
-exit 1
-
 az deployment group create  \
         --resource-group ${1} \
         --template-file azuredeploy.json \

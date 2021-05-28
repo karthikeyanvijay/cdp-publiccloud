@@ -132,6 +132,7 @@
     "commonManagedIdentityName": "[concat(parameters('namePrefix'), '-mi-common')]",
     "logAnalyticsWorkspaceName": "[concat(parameters('namePrefix'), '-loganalytics-common')]",
     "firewallName": "[concat(parameters('namePrefix'), '-azure-firewall')]",
+    "firewallPolicyName": "[concat(parameters('namePrefix'), '-azure-firewall-policy')]",
     "numberOfFirewallPublicIPAddresses": 1,
     "azfwAvailabilityZones": ["1"],
     "azfwpublicIPNamePrefix": "[concat(parameters('namePrefix'), '-azfw-pubip')]",
@@ -545,66 +546,41 @@
       "properties": {
         "ipConfigurations": "[variables('azureFirewallIpConfigurations')]",
         "applicationRuleCollections": [
-          {
-            "name": "appRc1",
-            "properties": {
-              "priority": 101,
-              "action": {
-                "type": "Allow"
-              },
-              "rules": [
-                {
-                  "name": "appRule1",
-                  "protocols": [
-                    {
-                      "port": 80,
-                      "protocolType": "http"
-                    },
-                    {
-                      "port": 443,
-                      "protocolType": "https"
-                    }
-                  ],
-                  "targetFqdns": [
-                    "www.microsoft.com"
-                  ],
-                  "sourceAddresses": [
-                    "10.0.2.0/24"
-                  ]
-                }
-              ]
-            }
-          }
         ],
         "networkRuleCollections": [
-          {
-            "name": "netRc1",
+        ],
+        "firewallPolicy": {
+            "id": "[resourceId('Microsoft.Network/firewallPolicies',variables('firewallPolicyName'))]"
+        }
+      },
+      "resources": [
+        {
+            "name": "azure-firewall-diagnostic-setting",
+            "type": "microsoft.insights/diagnosticSettings",
+            "apiVersion": "2020-01-01-preview",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+              "[resourceId('Microsoft.Network/azureFirewalls', variables('firewallName'))]"
+            ],
             "properties": {
-              "priority": 200,
-              "action": {
-                "type": "Allow"
-              },
-              "rules": [
+              "logs": [
                 {
-                  "name": "netRule1",
-                  "protocols": [
-                    "TCP"
-                  ],
-                  "sourceAddresses": [
-                    "10.0.2.0/24"
-                  ],
-                  "destinationAddresses": [
-                    "*"
-                  ],
-                  "destinationPorts": [
-                    "8000-8999"
-                  ]
+                  "category": "AzureFirewallApplicationRule",
+                  "enabled": "true"
+                },
+                {
+                  "category": "AzureFirewallNetworkRule",
+                  "enabled": "true"
+                },
+                {
+                  "category": "AzureFirewallDnsProxy",
+                  "enabled": "true"
                 }
-              ]
+              ],
+              "workspaceId": ""
             }
           }
-        ]
-      }
+      ]
     },
     {
       "type": "Microsoft.Compute/virtualMachines",
