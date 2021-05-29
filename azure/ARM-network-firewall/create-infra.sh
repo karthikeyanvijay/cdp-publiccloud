@@ -12,5 +12,4 @@ az deployment group create  \
         --template-file azuredeploy.json \
         --parameters azuredeploy.parameters.json \
         --mode Complete \
-        --parameters vmAdminPassword='BadPass#1' AllowIPAddress='71.135.69.90/32' deployVMinPrivateSubnet=false
-        
+        --parameters vmAdminPassword='BadPass#1' AllowIPAddress='71.135.69.90/32' deployVMinPrivateSubnet=false deployBastionVM=false

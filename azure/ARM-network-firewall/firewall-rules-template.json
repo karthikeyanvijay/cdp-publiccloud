@@ -6,13 +6,13 @@
             "type": "String",
             "defaultValue": "[resourceGroup().location]"
         },
-    "namePrefix": {
-      "type": "string",
-      "defaultValue": "cdp",
-      "metadata": {
-        "description": "Prefix for all resource names"
-      }
-    }
+        "namePrefix": {
+        "type": "string",
+        "defaultValue": "cdp",
+        "metadata": {
+            "description": "Prefix for all resource names"
+        }
+        }
     },
     "variables": {
         "firewallPolicyName": "[concat(parameters('namePrefix'), '-azure-firewall-policy')]"
@@ -20,7 +20,7 @@
     "resources": [
         {
             "type": "Microsoft.Network/firewallPolicies",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2020-05-01",
             "name": "[variables('firewallPolicyName')]",
             "location": "[parameters('location')]",
             "dependsOn": [],
@@ -30,6 +30,9 @@
                 "threatIntelMode": "Alert",
                 "threatIntelWhitelist": {
                     "ipAddresses": []
+                },
+                "dnsSettings": {
+                "enableProxy": true
                 }
             },
             "resources": [
@@ -103,33 +106,406 @@
                         "priority": 300,
                         "ruleCollections": [
                             {
-                                "name": "appRc1",
-                                "priority": 101,
+                                "name": "cdp-rules-application",
+                                "priority": 103,
                                 "action": {
                                     "type": "Allow"
                                 },
                                 "rules": [
                                     {
-                                        "name": "appRule1",
+                                        "name": "cloudera-ccm",
                                         "ruleType": "ApplicationRule",
                                         "sourceAddresses": [
-                                            "10.0.2.0/24"
+                                            "10.10.0.0/16"
                                         ],
                                         "sourceIpGroups": [],
                                         "targetFqdns": [
-                                            "www.microsoft.com"
+                                            "*.ccm.cdp.cloudera.com"
                                         ],
                                         "targetUrls": [],
                                         "fqdnTags": [],
                                         "protocols": [
                                             {
-                                                "protocolType": "Http",
-                                                "port": 80
-                                            },
+                                                "protocolType": "Https",
+                                                "port": 443
+                                            }
+                                        ],
+                                        "terminateTLS": false
+                                    },
+                                    {
+                                        "name": "cloudera-databus",
+                                        "ruleType": "ApplicationRule",
+                                        "sourceAddresses": [
+                                            "10.10.0.0/16"
+                                        ],
+                                        "sourceIpGroups": [],
+                                        "targetFqdns": [
+                                            "dbusapi.us-west-1.altus.cloudera.com",
+                                            "dbusapi.us-west-1.sigma.altus.cloudera.com"
+                                        ],
+                                        "targetUrls": [],
+                                        "fqdnTags": [],
+                                        "protocols": [
                                             {
                                                 "protocolType": "Https",
                                                 "port": 443
                                             }
+                                        ],
+                                        "terminateTLS": false
+                                    },
+                                    {
+                                        "name": "controls-plane-api",
+                                        "ruleType": "ApplicationRule",
+                                        "sourceAddresses": [
+                                            "10.10.0.0/16"
+                                        ],
+                                        "sourceIpGroups": [],
+                                        "targetFqdns": [
+                                            "api.us-west-1.cdp.cloudera.com"
+                                        ],
+                                        "targetUrls": [],
+                                        "fqdnTags": [],
+                                        "protocols": [
+                                            {
+                                                "protocolType": "Https",
+                                                "port": 443
+                                            }
+                                        ],
+                                        "terminateTLS": false
+                                    },
+                                    {
+                                        "name": "cloudera-manager-parcels",
+                                        "ruleType": "ApplicationRule",
+                                        "sourceAddresses": [
+                                            "10.10.0.0/16"
+                                        ],
+                                        "sourceIpGroups": [],
+                                        "targetFqdns": [
+                                            "archive.cloudera.com"
+                                        ],
+                                        "targetUrls": [],
+                                        "fqdnTags": [],
+                                        "protocols": [
+                                            {
+                                                "protocolType": "Https",
+                                                "port": 443
+                                            }
+                                        ],
+                                        "terminateTLS": false
+                                    },
+                                    {
+                                        "name": "dockers-images-cldr",
+                                        "ruleType": "ApplicationRule",
+                                        "sourceAddresses": [
+                                            "10.10.0.0/16"
+                                        ],
+                                        "sourceIpGroups": [],
+                                        "targetFqdns": [
+                                            "dcontainer.repository.cloudera.com",
+                                            "cdocker.repository.cloudera.com"
+                                        ],
+                                        "targetUrls": [],
+                                        "fqdnTags": [],
+                                        "protocols": [
+                                            {
+                                                "protocolType": "Https",
+                                                "port": 443
+                                            }
+                                        ],
+                                        "terminateTLS": false
+                                    },
+                                    {
+                                        "name": "dockers-images-fqds",
+                                        "ruleType": "ApplicationRule",
+                                        "sourceAddresses": [
+                                            "10.10.0.0/16"
+                                        ],
+                                        "sourceIpGroups": [],
+                                        "targetFqdns": [
+                                            "docker.repository.cloudera.com",
+                                            "container.repo.cloudera.com",
+                                            "*.s3.us-east-1.amazonaws.com",
+                                            "s3-r-w.us-east-1.amazonaws.com",
+                                            "*.execute-api.us-east-1.amazonaws.com"
+                                        ],
+                                        "targetUrls": [
+                                        ],
+                                        "fqdnTags": [],
+                                        "protocols": [
+                                            {
+                                                "protocolType": "Https",
+                                                "port": 443
+                                            }
+                                        ],
+                                        "terminateTLS": false
+                                    },
+                                    {
+                                        "name": "dockers-images-urls",
+                                        "description": "Added SSL termination, removed wildcard & moved to FQDN",
+                                        "ruleType": "ApplicationRule",
+                                        "sourceAddresses": [
+                                            "10.10.0.0/16"
+                                        ],
+                                        "sourceIpGroups": [],
+                                        "targetFqdns": [
+                                            "auth.docker.io",
+                                            "cloudera-docker-dev.jfrog.io",
+                                            "docker-images-prod.s3.amazonaws.com",
+                                            "gcr.io",
+                                            "k8s.gcr.io",
+                                            "quay-registry.s3.amazonaws.com",
+                                            "quay.io",
+                                            "quayio-production-s3.s3.amazonaws.com",
+                                            "docker.io",
+                                            "production.cloudflare.docker.com",
+                                            "storage.googleapis.com"
+                                        ],
+                                        "targetUrls": [
+                                        ],
+                                        "fqdnTags": [],
+                                        "protocols": [
+                                            {
+                                                "protocolType": "Https",
+                                                "port": 443
+                                            }
+                                        ],
+                                        "terminateTLS": false
+                                    },
+                                    {
+                                        "name": "general-azure-guidelines",
+                                        "ruleType": "ApplicationRule",
+                                        "sourceAddresses": [
+                                            "10.10.0.0/16"
+                                        ],
+                                        "sourceIpGroups": [],
+                                        "targetFqdns": [
+                                            "*.aadcdn.microsoftonline-p.com",
+                                            "*.aka.ms",
+                                            "*.applicationinsights.io",
+                                            "*.azure.com",
+                                            "*.azure.net",
+                                            "*.azurefd.net",
+                                            "*.azure-api.net",
+                                            "*.azuredatalakestore.net",
+                                            "*.azureedge.net",
+                                            "*.loganalytics.io",
+                                            "*.microsoft.com",
+                                            "*.microsoftonline.com",
+                                            "*.microsoftonline-p.com",
+                                            "*.msauth.net",
+                                            "*.msftauth.net",
+                                            "*.trafficmanager.net",
+                                            "*.visualstudio.com",
+                                            "*.windows.net",
+                                            "*.windows-int.net"
+                                        ],
+                                        "targetUrls": [],
+                                        "fqdnTags": [],
+                                        "protocols": [
+                                            {
+                                                "protocolType": "Https",
+                                                "port": 443
+                                            }
+                                        ],
+                                        "terminateTLS": false
+                                    },
+                                    {
+                                        "name": "azure-kubernetes-services",
+                                        "ruleType": "ApplicationRule",
+                                        "sourceAddresses": [
+                                            "10.10.0.0/16"
+                                        ],
+                                        "sourceIpGroups": [],
+                                        "targetFqdns": [],
+                                        "targetUrls": [],
+                                        "fqdnTags": [
+                                            "AzureKubernetesService"
+                                        ],
+                                        "protocols": [
+                                            {
+                                                "protocolType": "Https",
+                                                "port": 443
+                                            }
+                                        ],
+                                        "terminateTLS": false
+                                    },
+                                    {
+                                        "name": "azure-datalake-storage-gen2",
+                                        "ruleType": "ApplicationRule",
+                                        "sourceAddresses": [
+                                            "10.10.0.0/16"
+                                        ],
+                                        "sourceIpGroups": [],
+                                        "targetFqdns": [
+                                            "*.dfs.core.windows.net"
+                                        ],
+                                        "targetUrls": [],
+                                        "fqdnTags": [],
+                                        "protocols": [
+                                            {
+                                                "protocolType": "Https",
+                                                "port": 443
+                                            }
+                                        ],
+                                        "terminateTLS": false
+                                    },
+                                    {
+                                        "name": "ARM-to-manage-user-assigned",
+                                        "ruleType": "ApplicationRule",
+                                        "sourceAddresses": [
+                                            "10.10.0.0/16"
+                                        ],
+                                        "sourceIpGroups": [],
+                                        "targetFqdns": [
+                                            "management.azure.com"
+                                        ],
+                                        "targetUrls": [],
+                                        "fqdnTags": [],
+                                        "protocols": [
+                                            {
+                                                "protocolType": "Https",
+                                                "port": 443
+                                            }
+                                        ],
+                                        "terminateTLS": false
+                                    },
+                                    {
+                                        "name": "microsoft-log-analytics",
+                                        "ruleType": "ApplicationRule",
+                                        "sourceAddresses": [
+                                            "10.10.0.0/16"
+                                        ],
+                                        "sourceIpGroups": [],
+                                        "targetFqdns": [
+                                            "*.agentsvc.azure-automation.net",
+                                            "*.ods.opinsights.azure.com",
+                                            "*.oms.opinsights.azure.com",
+                                            "*.blob.core.windows.net"
+                                        ],
+                                        "targetUrls": [],
+                                        "fqdnTags": [],
+                                        "protocols": [
+                                            {
+                                                "protocolType": "Https",
+                                                "port": 443
+                                            }
+                                        ],
+                                        "terminateTLS": false
+                                    },
+                                    {
+                                        "name": "digital-ca-certificate",
+                                        "ruleType": "ApplicationRule",
+                                        "sourceAddresses": [
+                                            "10.10.0.0/16"
+                                        ],
+                                        "sourceIpGroups": [],
+                                        "targetFqdns": [
+                                            "www.digicert.com",
+                                            "cacerts.digicert.com"
+                                        ],
+                                        "targetUrls": [],
+                                        "fqdnTags": [],
+                                        "protocols": [
+                                            {
+                                                "protocolType": "Https",
+                                                "port": 443
+                                            }
+                                        ],
+                                        "terminateTLS": false
+                                    }
+                                ],
+                                "ruleCollectionType": "FirewallPolicyFilterRuleCollection"
+                            },
+                            {
+                                "name": "cdp-rules-network",
+                                "priority": 102,
+                                "action": {
+                                    "type": "Allow"
+                                },
+                                "rules": [
+                                    {
+                                        "name": "network-time-protocol-synchronization",
+                                        "ruleType": "NetworkRule",
+                                        "sourceAddresses": [
+                                            "10.10.0.0/16"
+                                        ],
+                                        "sourceIpGroups": [],
+                                        "destinationFqdns": [
+                                            "0.pool.ntp.org",
+                                            "1.pool.ntp.org",
+                                            "2.pool.ntp.org",
+                                            "3.pool.ntp.org"
+                                        ],
+                                        "targetUrls": [],
+                                        "fqdnTags": [],
+                                        "ipProtocols": [
+                                            "UDP"
+                                        ],
+                                        "destinationPorts": [
+                                            "123"
+                                        ],
+                                        "terminateTLS": false
+                                    },
+                                    {
+                                        "name": "azure-database-for-postgres",
+                                        "description": "Removed wildcard",
+                                        "ruleType": "NetworkRule",
+                                        "sourceAddresses": [
+                                            "10.10.0.0/16"
+                                        ],
+                                        "sourceIpGroups": [],
+                                        "destinationFqdns": [
+                                            "postgres.database.azure.com"
+                                        ],
+                                        "targetUrls": [],
+                                        "fqdnTags": [],
+                                        "ipProtocols": [
+                                            "TCP"
+                                        ],
+                                        "destinationPorts": [
+                                            "5432"
+                                        ],
+                                        "terminateTLS": false
+                                    },
+                                    {
+                                        "name": "azure-database-for-mysql",
+                                        "description": "Removed wildcard",
+                                        "ruleType": "NetworkRule",
+                                        "sourceAddresses": [
+                                            "10.10.0.0/16"
+                                        ],
+                                        "sourceIpGroups": [],
+                                        "destinationFqdns": [
+                                            "mysql.database.azure.com"
+                                        ],
+                                        "targetUrls": [],
+                                        "fqdnTags": [],
+                                        "ipProtocols": [
+                                            "TCP"
+                                        ],
+                                        "destinationPorts": [
+                                            "3306"
+                                        ],
+                                        "terminateTLS": false
+                                    },
+                                    {
+                                        "name": "azure-files",
+                                        "description": "Removed wildcard",
+                                        "ruleType": "NetworkRule",
+                                        "sourceAddresses": [
+                                            "10.10.0.0/16"
+                                        ],
+                                        "sourceIpGroups": [],
+                                        "destinationFqdns": [
+                                            "file.core.windows.net"
+                                        ],
+                                        "targetUrls": [],
+                                        "fqdnTags": [],
+                                        "ipProtocols": [
+                                            "TCP"
+                                        ],
+                                        "destinationPorts": [
+                                            "445"
                                         ],
                                         "terminateTLS": false
                                     }

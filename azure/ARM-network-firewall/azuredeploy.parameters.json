@@ -8,9 +8,6 @@
     "AllowIPAddress": {
       "value": "0.0.0.0/0"
     },
-    "deployVMinPrivateSubnet": {
-      "value": true
-    },
     "resourceTags": {
       "value": {
           "Owner": "Vijay Anand Karthikeyan",
@@ -20,6 +17,12 @@
     },
     "vmAdminPassword": {
       "value": "BadPass#1"
+    },
+    "deployVMinPrivateSubnet": {
+      "value": false
+    },
+    "deployBastionVM": {
+      "value": false
     }
   }
 }
