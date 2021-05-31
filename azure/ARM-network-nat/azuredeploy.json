@@ -31,6 +31,27 @@
         "description": "Create a bastion host in public subnet"
       }
     },
+    "setupPeeredNetwork": {
+        "type": "bool",
+        "defaultValue": false,
+        "metadata": {
+            "description": "Create a second network & peer it to the first network"
+        }
+    },
+    "setupPeeredNetworkVMs": {
+        "type": "bool",
+        "defaultValue": false,
+        "metadata": {
+            "description": "Setup 4 VMs in the peered network"
+        }
+    },
+    "vmCountinPeeredNetwork": {
+        "type": "int",
+        "defaultValue": 0,
+        "metadata": {
+            "description": "Number of VMs in the peered network"
+        }
+    },
     "resourceTags": {
         "type": "object",
         "defaultValue": {
@@ -43,6 +64,18 @@
       "defaultValue": "DefaultPassW0rd$",
       "metadata": {
         "description": "Admin password for VMs"
+      }
+    },
+    "vmImageReference": {
+      "type": "Object",
+      "defaultValue": { 
+        "publisher": "RedHat", 
+        "offer": "RHEL", 
+        "sku": "7.8", 
+        "version": "latest" 
+      },
+      "metadata": {
+        "description": "Image to be used when building the VMs"
       }
     },
     "vnetAddressPrefix": {
@@ -94,6 +127,20 @@
         "description": "Subnet 6 Prefix"
       }
     },
+    "vnet2AddressPrefix": {
+        "type": "string",
+        "defaultValue": "10.20.0.0/16",
+        "metadata": {
+            "description": "Address prefix"
+        }
+    },
+    "subnet1vnet2Prefix": {
+        "type": "string",
+        "defaultValue": "10.20.21.0/24",
+        "metadata": {
+            "description": "Subnet 1 Prefix"
+        }
+    },
     "location": {
       "type": "string",
       "defaultValue": "[resourceGroup().location]",
@@ -116,16 +163,26 @@
     "publicRouteTableName": "[concat(parameters('namePrefix'), '-routetbl-pub')]",
     "privateRouteTableName": "[concat(parameters('namePrefix'), '-routetbl-prv')]",
     "server4NICName": "[concat(parameters('namePrefix'), '-nic-server4')]",
+    "server4VMName": "[concat(parameters('namePrefix'), '-vm-server4')]",    
     "bastionNICName": "[concat(parameters('namePrefix'), '-nic-bastion')]",
     "bastionVMName": "[concat(parameters('namePrefix'), '-vm-bastion')]",
     "bastionpublicIpAddressName": "[concat(parameters('namePrefix'), '-pubip-bastion')]",
     "natpublicIpAddressName": "[concat(parameters('namePrefix'), '-pubip-nat')]",
     "natgatewayName": "[concat(parameters('namePrefix'), '-nat')]",
-    "server4VMName": "[concat(parameters('namePrefix'), '-vm-server4')]",
+    "vnet2Name": "[concat(parameters('namePrefix'), '-vnet2')]",
+    "subnet1Vnet2Name": "[concat(parameters('namePrefix'), '-prv-vnet2-', 'subnet1')]",
+    "natpublicIpAddressVnet2Name": "[concat(parameters('namePrefix'), '-pubip-vnet2-nat')]",
+    "natgatewayVnet2Name": "[concat(parameters('namePrefix'), '-vnet2-nat')]",
+    "privateVnet2NSGName": "[concat(parameters('namePrefix'), '-nsg-vnet2-', 'prv')]",
+    "privateVnet2RouteTableName": "[concat(parameters('namePrefix'), '-routetbl-vnet2-prv')]",
+    "vNettoVnet2PeeringName": "[concat(variables('vnetName'), '-to-', variables('vnet2Name'))]",
+    "vnet2tovNetPeeringName": "[concat(variables('vnet2Name'), '-to-', variables('vnetName'))]", 
     "commonManagedIdentityName": "[concat(parameters('namePrefix'), '-mi-common')]",
     "logAnalyticsWorkspaceName": "[concat(parameters('namePrefix'), '-loganalytics-common')]",
     "vmSize": "Standard_B2s",
     "vmOsDiskType": "Premium_LRS",
+    "peeredNetworkvmSize": "Standard_D16s_v3",
+    "peeredvmOsDiskType": "Premium_LRS",
     "adminUsername": "azureuser",
     "adminPassword": "[parameters('vmAdminPassword')]"
   },
@@ -256,7 +313,30 @@
             }
           }
         ]
-      }
+      },
+      "resources": [
+          {
+              "apiVersion": "2020-05-01",
+              "type": "virtualNetworkPeerings",
+              "condition": "[parameters('setupPeeredNetwork')]",
+              "name": "[variables('vNettoVnet2PeeringName')]",
+              "location": "[parameters('location')]",
+              "dependsOn": [
+                  "[resourceId('Microsoft.Network/virtualNetworks/', variables('vnetName'))]",
+                  "[resourceId('Microsoft.Network/virtualNetworks/', variables('vnet2Name'))]"
+              ],
+              "comments": "This is the peering from vNet 1 to vNet 2",
+              "properties": {
+                  "allowVirtualNetworkAccess": true,
+                  "allowForwardedTraffic": false,
+                  "allowGatewayTransit": false,
+                  "useRemoteGateways": false,
+                  "remoteVirtualNetwork": {
+                      "id": "[resourceId('Microsoft.Network/virtualNetworks',variables('vnet2Name'))]"
+                  }
+              }
+          }
+      ]
     },
     {
       "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
@@ -287,12 +367,12 @@
             "kind": "CustomLog",
             "properties": {
                 "customLogName": "bastion_ACCESS_LOG",
-                "description": "Queries access.log for bastion proxy",
+                "description": "Queries access.log for squid proxy",
                 "inputs": [
                   {
                       "location": {
                         "fileSystemLocations": {
-                            "linuxFileTypeLogPaths": [ "/var/log/bastion/access.log" ]
+                            "linuxFileTypeLogPaths": [ "/var/log/squid/access.log" ]
                         }
                       },
                       "recordDelimiter": {
@@ -353,6 +433,45 @@
       "tags": "[parameters('resourceTags')]",
       "properties": {
         "securityRules": [
+              {
+                "name": "allow-all-from-all-vnet",
+                "properties": {
+                  "priority": 1000,
+                  "access": "Allow",
+                  "direction": "Inbound",
+                  "destinationPortRange": "*",
+                  "protocol": "*",
+                  "sourceAddressPrefix": "10.10.0.0/16",
+                  "sourcePortRange": "*",
+                  "destinationAddressPrefix": "*"
+                }
+              },
+              {
+                "name": "allow-all-from-azure-loadbalancer",
+                "properties": {
+                  "priority": 3500,
+                  "access": "Allow",
+                  "direction": "Inbound",
+                  "destinationPortRange": "*",
+                  "protocol": "*",
+                  "sourceAddressPrefix": "AzureLoadBalancer",
+                  "sourcePortRange": "*",
+                  "destinationAddressPrefix": "*"
+                }
+              },
+              {
+                "name": "deny-all-from-vnet2",
+                "properties": {
+                  "priority": 4000,
+                  "access": "Deny",
+                  "direction": "Inbound",
+                  "destinationPortRange": "*",
+                  "protocol": "*",
+                  "sourceAddressPrefix": "10.20.0.0/16",
+                  "sourcePortRange": "*",
+                  "destinationAddressPrefix": "*"
+                }
+              }
         ]
       }
     },
@@ -373,7 +492,7 @@
               "destinationPortRange": "*",
               "protocol": "*",
               "sourceAddressPrefix": "[parameters('AllowIPAddress')]",
-              "sourcePortRange": "1024-65535",
+              "sourcePortRange": "0-65535",
               "destinationAddressPrefix": "*"
             }
           }
@@ -462,12 +581,7 @@
                       "storageAccountType": "[variables('vmOsDiskType')]"
                   }
               },
-              "imageReference": {
-                  "publisher": "RedHat",
-                  "offer": "RHEL",
-                  "sku": "7.8",
-                  "version": "latest"
-              }
+              "imageReference": "[parameters('vmImageReference')]"
           },
           "networkProfile": {
               "networkInterfaces": [
@@ -501,18 +615,18 @@
           "publicIpAllocationMethod": "Static"
       }
     },
-   {
-      "type": "Microsoft.Network/publicIpAddresses",
-      "name": "[variables('natpublicIpAddressName')]",
-      "location": "[parameters('location')]",
-      "tags": "[parameters('resourceTags')]",
-      "sku": {
-          "name": "Standard"
+    {
+        "type": "Microsoft.Network/publicIpAddresses",
+        "name": "[variables('natpublicIpAddressName')]",
+        "location": "[parameters('location')]",
+        "tags": "[parameters('resourceTags')]",
+        "sku": {
+            "name": "Standard"
+        },
+        "properties": {
+            "publicIpAllocationMethod": "Static"
+        }
       },
-      "properties": {
-          "publicIpAllocationMethod": "Static"
-      }
-    },
     {
       "type": "Microsoft.Network/natGateways",
       "apiVersion": "2020-06-01",
@@ -592,12 +706,7 @@
                       "storageAccountType": "[variables('vmOsDiskType')]"
                   }
               },
-              "imageReference": {
-                  "publisher": "OpenLogic",
-                  "offer": "CentOS",
-                  "sku": "7-CI",
-                  "version": "latest"
-              }
+              "imageReference": "[parameters('vmImageReference')]"
           },
           "networkProfile": {
               "networkInterfaces": [
@@ -660,6 +769,252 @@
             }
         }
       ]
+    },
+    {
+        "type": "Microsoft.Network/publicIpAddresses",
+        "condition": "[parameters('setupPeeredNetwork')]",
+        "apiVersion": "2020-06-01",
+        "name": "[variables('natpublicIpAddressVnet2Name')]",
+        "location": "[parameters('location')]",
+        "tags": "[parameters('resourceTags')]",
+        "sku": {
+                "name": "Standard"
+            },
+        "properties": {
+                "publicIpAllocationMethod": "Static"
+            }
+    },
+    {
+        "type": "Microsoft.Network/natGateways",
+        "condition": "[parameters('setupPeeredNetwork')]",
+        "apiVersion": "2020-06-01",
+        "name": "[variables('natgatewayVnet2Name')]",
+        "location": "[parameters('location')]",
+        "sku": {
+            "name": "Standard"
+        },
+        "dependsOn": [
+            "[resourceId('Microsoft.Network/publicIPAddresses', variables('natpublicIpAddressVnet2Name'))]"
+        ],
+        "properties": {
+            "idleTimeoutInMinutes": 4,
+            "publicIpAddresses": [
+                    {
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('natpublicIpAddressVnet2Name'))]"
+                    }
+                ]
+            }
+        },
+    {
+        "type": "Microsoft.Network/networkSecurityGroups",
+        "condition": "[parameters('setupPeeredNetwork')]",
+        "apiVersion": "2019-08-01",
+        "name": "[variables('privateVnet2NSGName')]",
+        "location": "[parameters('location')]",
+        "tags": "[parameters('resourceTags')]",
+        "properties": {
+            "securityRules": [
+              {
+                "name": "allow-all-from-all-vnet2",
+                "properties": {
+                  "priority": 1000,
+                  "access": "Allow",
+                  "direction": "Inbound",
+                  "destinationPortRange": "*",
+                  "protocol": "*",
+                  "sourceAddressPrefix": "10.20.0.0/16",
+                  "sourcePortRange": "*",
+                  "destinationAddressPrefix": "*"
+                }
+              },
+              {
+                "name": "allow-all-from-bastion",
+                "properties": {
+                  "priority": 3000,
+                  "access": "Allow",
+                  "direction": "Inbound",
+                  "destinationPortRange": "*",
+                  "protocol": "*",
+                  "sourceAddressPrefix": "10.10.11.4",
+                  "sourcePortRange": "0-65535",
+                  "destinationAddressPrefix": "*"
+                }
+              },
+              {
+                "name": "allow-all-from-azure-loadbalancer",
+                "properties": {
+                  "priority": 3500,
+                  "access": "Allow",
+                  "direction": "Inbound",
+                  "destinationPortRange": "*",
+                  "protocol": "*",
+                  "sourceAddressPrefix": "AzureLoadBalancer",
+                  "sourcePortRange": "*",
+                  "destinationAddressPrefix": "*"
+                }
+              },
+              {
+                "name": "deny-all-from-vnet1",
+                "properties": {
+                  "priority": 4000,
+                  "access": "Deny",
+                  "direction": "Inbound",
+                  "destinationPortRange": "*",
+                  "protocol": "*",
+                  "sourceAddressPrefix": "10.10.0.0/16",
+                  "sourcePortRange": "*",
+                  "destinationAddressPrefix": "*"
+                }
+              }
+            ]
+        }
+    },
+    {
+        "type": "Microsoft.Network/routeTables",
+        "condition": "[parameters('setupPeeredNetwork')]",
+        "apiVersion": "2019-08-01",
+        "name": "[variables('privateVnet2RouteTableName')]",
+        "location": "[parameters('location')]",
+        "tags": "[parameters('resourceTags')]",
+        "properties": {
+            "routes": [
+            ]
+        }
+    },
+    {
+        "apiVersion": "2020-05-01",
+        "type": "Microsoft.Network/virtualNetworks",
+        "condition": "[parameters('setupPeeredNetwork')]",
+        "name": "[variables('vnet2Name')]",
+        "location": "[parameters('location')]",
+        "tags": "[parameters('resourceTags')]",
+        "dependsOn": [
+            "[resourceId('Microsoft.Network/networkSecurityGroups', variables('privateVnet2NSGName'))]",
+            "[resourceId('Microsoft.Network/routeTables', variables('privateVnet2RouteTableName'))]",
+            "[resourceId('Microsoft.Network/natGateways', variables('natgatewayVnet2Name'))]"
+        ],
+        "comments": "This is the second vNet",
+        "properties": {
+            "addressSpace": {
+                "addressPrefixes": [
+                    "[parameters('vnet2AddressPrefix')]"
+                ]
+            },
+            "subnets": [
+                {
+                    "name": "[variables('subnet1Vnet2Name')]",
+                    "properties": {
+                        "addressPrefix": "[parameters('subnet1vnet2Prefix')]",
+                        "routeTable": {
+                            "id": "[resourceId('Microsoft.Network/routeTables', variables('privateVnet2RouteTableName'))]"
+                        },
+                        "networkSecurityGroup": {
+                            "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('privateVnet2NSGName'))]"
+                        },
+                        "natGateway": {
+                            "id": "[resourceId('Microsoft.Network/natGateways', variables('natgatewayVnet2Name'))]"
+                        }
+                    }
+                }
+            ]
+        },
+        "resources": [
+            {
+                "apiVersion": "2020-05-01",
+                "type": "virtualNetworkPeerings",
+                "condition": "[parameters('setupPeeredNetwork')]",
+                "name": "[variables('vnet2tovNetPeeringName')]",
+                "location": "[parameters('location')]",
+                "dependsOn": [
+                    "[resourceId('Microsoft.Network/virtualNetworks/', variables('vnetName'))]",
+                    "[resourceId('Microsoft.Network/virtualNetworks/', variables('vnet2Name'))]"
+                ],
+                "comments": "This is the peering from vNet 2 to vNet 1",
+                "properties": {
+                    "allowVirtualNetworkAccess": true,
+                    "allowForwardedTraffic": false,
+                    "allowGatewayTransit": false,
+                    "useRemoteGateways": false,
+                    "remoteVirtualNetwork": {
+                        "id": "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetName'))]"
+                    }
+                }
+            }
+        ]
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "condition": "[ and( parameters('setupPeeredNetworkVMs'), parameters('setupPeeredNetwork'))]",
+      "apiVersion": "2018-10-01",
+      "name": "[concat('host',copyIndex(1),'-nic')]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
+      "dependsOn": [
+        "[variables('vnet2Name')]"
+      ],
+      "properties": {
+          "ipConfigurations": [
+              {
+                  "name": "[concat('host',copyIndex(1),'-ipconfig')]",
+                  "properties": {
+                      "subnet": {
+                        "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet2Name'), variables('subnet1Vnet2Name'))]"
+                      },
+                      "privateIPAllocationMethod": "Dynamic"
+                  }
+              }
+          ]
+      },
+      "copy": {
+        "name": "niccopy",
+        "count": "[parameters('vmCountinPeeredNetwork')]"
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "condition": "[ and( parameters('setupPeeredNetworkVMs'), parameters('setupPeeredNetwork'))]",
+      "apiVersion": "2020-12-01",
+      "name": "[concat('host',copyIndex(1))]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('resourceTags')]",
+      "dependsOn": [
+          "[concat('Microsoft.Network/networkInterfaces/', 'host',copyIndex(1),'-nic')]"
+      ],
+      "properties": {
+          "hardwareProfile": {
+              "vmSize": "[variables('peeredNetworkvmSize')]"
+          },
+          "storageProfile": {
+              "osDisk": {
+                  "createOption": "FromImage",
+                  "managedDisk": {
+                      "storageAccountType": "[variables('peeredvmOsDiskType')]"
+                  }
+              },
+              "imageReference": "[parameters('vmImageReference')]"
+          },
+          "networkProfile": {
+              "networkInterfaces": [
+                  {
+                      "id": "[resourceId('Microsoft.Network/networkInterfaces/', concat('host',copyIndex(1),'-nic'))]"
+                  }
+              ]
+          },
+          "osProfile": {
+              "computerName": "[concat('host',copyIndex(1))]",
+              "adminUsername": "[variables('adminUsername')]",
+              "adminPassword": "[variables('adminPassword')]",
+              "linuxConfiguration": {
+                  "patchSettings": {
+                      "patchMode": "ImageDefault"
+                  }
+              }
+          }
+      },
+      "copy": {
+        "name": "hostcopy",
+        "count": "[parameters('vmCountinPeeredNetwork')]"
+      }
     }
   ]
 }

@@ -1,7 +1,10 @@
 ResourceGroup=
-namePrefix=
+namePrefix=cdp
 MyIpAddressCIDR=
 deployVMinPrivateSubnet=false
 deployBastionVM=false
+setupPeeredNetwork=false
+setupPeeredNetworkVMs=false
+vmCountinPeeredNetwork=0
 vmAdminPassword=
 resourceTags="{ \"Owner\": \"owner@cloudera.com\", \"Project\": \"Self\", \"EndDate\": \"12312030\" }"

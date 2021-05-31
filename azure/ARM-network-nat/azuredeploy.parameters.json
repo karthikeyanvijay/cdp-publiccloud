@@ -8,9 +8,6 @@
     "AllowIPAddress": {
       "value": "0.0.0.0/0"
     },
-    "deployVMinPrivateSubnet": {
-      "value": true
-    },
     "resourceTags": {
       "value": {
           "Owner": "Vijay Anand Karthikeyan",
@@ -19,10 +16,30 @@
       }
     },
     "vmAdminPassword": {
-      "value": "BadPass#1"
+      "value": "DefaultPassW0rd$"
+    },
+    "vmImageReference": {
+      "value": {
+        "publisher": "RedHat", 
+        "offer": "RHEL", 
+        "sku": "7.8", 
+        "version": "latest" 
+      }
     },
     "deployBastionVM": {
       "value": false
+    },
+    "deployVMinPrivateSubnet": {
+      "value": true
+    },
+    "setupPeeredNetwork": {
+      "value": false
+    },
+    "setupPeeredNetworkVMs": {
+      "value": false
+    },
+    "vmCountinPeeredNetwork": {
+      "value": 0
     }
   }
 }
