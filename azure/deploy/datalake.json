@@ -6,17 +6,21 @@
     "storageLocation": "abfs://data@cdpvkar.dfs.core.windows.net"
   },
   "scale": "LIGHT_DUTY",
-  "enableRangerRaz": true,
+  "enableRangerRaz": false,
   "tags": [
     {
       "key": "Project",
-      "value": "self"
+      "value": "Self"
     },
     {
-      "key": "Owner",
-      "value": "Vijay Anand Karthikeyan"
+        "key": "Owner",
+        "value": "Vijay Anand Karthikeyan"
+    },
+    {
+        "key": "enddate",
+        "value": "07302022"
     }
   ],
-  "runtime": "7.2.8",
+  "runtime": "7.2.9",
   "databaseAvailabilityType": "NONE"
 }

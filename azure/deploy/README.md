@@ -81,6 +81,12 @@ Use the following steps to deploy the environment. [CDP CLI](https://docs.cloude
 cdp dw create-cluster --cli-input-json file://cdw-cluster.json
 ```
 
+## Ops DB
+* 
+```
+cdp opdb create-database --cli-input-json file://opdb-database.json
+```
+
 ## Cloudera Data Engineering
 * Enable service
     ```

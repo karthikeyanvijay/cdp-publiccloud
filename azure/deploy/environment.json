@@ -23,7 +23,7 @@
     },
     "description": "Description of the environment",
     "enableTunnel": true,
-    "workloadAnalytics": false,
+    "workloadAnalytics": true,
     "reportDeploymentLogs": false,
     "freeIpa": {
         "instanceCountByGroup": 1
@@ -31,11 +31,15 @@
     "tags": [
         {
             "key": "Project",
-            "value": "self"
+            "value": "Self"
         },
         {
             "key": "Owner",
             "value": "Vijay Anand Karthikeyan"
+        },
+        {
+            "key": "enddate",
+            "value": "07302022"
         }
     ],
     "proxyConfigName": ""

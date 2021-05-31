@@ -20,6 +20,9 @@
     },
     "vmAdminPassword": {
       "value": "BadPass#1"
+    },
+    "deployBastionVM": {
+      "value": false
     }
   }
 }

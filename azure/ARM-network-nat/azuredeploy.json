@@ -24,6 +24,13 @@
         "description": "Create a server in the private subnet"
       }
     },
+    "deployBastionVM": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Create a bastion host in public subnet"
+      }
+    },
     "resourceTags": {
         "type": "object",
         "defaultValue": {
@@ -369,19 +376,6 @@
               "sourcePortRange": "1024-65535",
               "destinationAddressPrefix": "*"
             }
-          },
-          {
-            "name": "allow-all-inbound-vnet",
-            "properties": {
-              "priority": 1001,
-              "access": "Allow",
-              "direction": "Inbound",
-              "destinationPortRange": "*",
-              "protocol": "*",
-              "sourceAddressPrefix": "[parameters('vnetAddressPrefix')]",
-              "sourcePortRange": "*",
-              "destinationAddressPrefix": "*"
-            }
           }
         ]
       }
@@ -496,6 +490,7 @@
     },
     {
       "type": "Microsoft.Network/publicIpAddresses",
+      "condition": "[parameters('deployBastionVM')]",
       "name": "[variables('bastionpublicIpAddressName')]",
       "location": "[parameters('location')]",
       "tags": "[parameters('resourceTags')]",
@@ -540,6 +535,7 @@
     },
     {
       "type": "Microsoft.Network/networkInterfaces",
+      "condition": "[parameters('deployBastionVM')]",
       "apiVersion": "2018-10-01",
       "name": "[variables('bastionNICName')]",
       "location": "[parameters('location')]",
@@ -569,6 +565,7 @@
     },
     {
       "type": "Microsoft.Compute/virtualMachines",
+      "condition": "[parameters('deployBastionVM')]",
       "apiVersion": "2020-12-01",
       "name": "[variables('bastionVMName')]",
       "location": "[parameters('location')]",
@@ -623,6 +620,7 @@
       "resources":[
         {
           "type": "Microsoft.Compute/virtualMachines/extensions",
+          "condition": "[parameters('deployBastionVM')]",
           "apiVersion": "2015-06-15",
           "name": "[concat(variables('bastionVMName'),'/CustomScript')]",
           "location": "[parameters('location')]",
@@ -645,6 +643,7 @@
         },
         {
             "type": "extensions",
+            "condition": "[parameters('deployBastionVM')]",
             "apiVersion": "2018-10-01",
             "name": "DependencyAgentLinux",
             "location": "[parameters('location')]",

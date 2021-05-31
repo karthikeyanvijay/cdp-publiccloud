@@ -1,0 +1,7 @@
+ResourceGroup=
+namePrefix=
+MyIpAddressCIDR=
+deployVMinPrivateSubnet=false
+deployBastionVM=false
+vmAdminPassword=
+resourceTags="{ \"Owner\": \"owner@cloudera.com\", \"Project\": \"Self\", \"EndDate\": \"12312030\" }"
