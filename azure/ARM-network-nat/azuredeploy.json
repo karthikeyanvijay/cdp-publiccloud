@@ -45,6 +45,13 @@
             "description": "Setup 4 VMs in the peered network"
         }
     },
+    "setupPeeredNetworkPrivateDNS": {
+        "type": "bool",
+        "defaultValue": false,
+        "metadata": {
+            "description": "Setup a PrivateDNS in peered network"
+        }
+    },
     "vmCountinPeeredNetwork": {
         "type": "int",
         "defaultValue": 0,
@@ -170,6 +177,7 @@
     "natpublicIpAddressName": "[concat(parameters('namePrefix'), '-pubip-nat')]",
     "natgatewayName": "[concat(parameters('namePrefix'), '-nat')]",
     "vnet2Name": "[concat(parameters('namePrefix'), '-vnet2')]",
+    "peeredNetworkDomainName": "abc.local",
     "subnet1Vnet2Name": "[concat(parameters('namePrefix'), '-prv-vnet2-', 'subnet1')]",
     "natpublicIpAddressVnet2Name": "[concat(parameters('namePrefix'), '-pubip-vnet2-nat')]",
     "natgatewayVnet2Name": "[concat(parameters('namePrefix'), '-vnet2-nat')]",
@@ -181,7 +189,7 @@
     "logAnalyticsWorkspaceName": "[concat(parameters('namePrefix'), '-loganalytics-common')]",
     "vmSize": "Standard_B2s",
     "vmOsDiskType": "Premium_LRS",
-    "peeredNetworkvmSize": "Standard_D16s_v3",
+    "peeredNetworkvmSize": "Standard_B8ms",
     "peeredvmOsDiskType": "Premium_LRS",
     "adminUsername": "azureuser",
     "adminPassword": "[parameters('vmAdminPassword')]"
@@ -882,6 +890,33 @@
         }
     },
     {
+        "type": "Microsoft.Network/privateDnsZones",
+        "condition": "[ and( parameters('setupPeeredNetworkPrivateDNS'), parameters('setupPeeredNetwork'))]",
+        "apiVersion": "2018-09-01",
+        "name": "[variables('peeredNetworkDomainName')]",
+        "location": "global",
+        "dependsOn": [],
+        "tags": "[parameters('resourceTags')]",
+        "properties": {}
+    },
+    {
+        "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+        "apiVersion": "2018-09-01",
+        "condition": "[ and( parameters('setupPeeredNetworkPrivateDNS'), parameters('setupPeeredNetwork'))]",
+        "name": "[concat(variables('peeredNetworkDomainName'), '/', variables('vnet2Name'))]",
+        "location": "global",
+        "dependsOn": [
+           "[resourceId('Microsoft.Network/privateDnsZones', variables('peeredNetworkDomainName'))]",
+           "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet2Name'))]"
+        ],
+        "properties": {
+            "registrationEnabled": true,
+            "virtualNetwork": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet2Name'))]"
+            }
+        }
+    },
+    {
         "apiVersion": "2020-05-01",
         "type": "Microsoft.Network/virtualNetworks",
         "condition": "[parameters('setupPeeredNetwork')]",
@@ -960,7 +995,8 @@
                       "subnet": {
                         "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet2Name'), variables('subnet1Vnet2Name'))]"
                       },
-                      "privateIPAllocationMethod": "Dynamic"
+                      "privateIPAllocationMethod": "Static",
+                      "privateIPAddress": "[concat('10.20.21.2',copyIndex(1))]"
                   }
               }
           ]
@@ -1001,7 +1037,7 @@
               ]
           },
           "osProfile": {
-              "computerName": "[concat('host',copyIndex(1))]",
+              "computerName": "[concat('host',copyIndex(1),'.internal.cloudapp.net')]",
               "adminUsername": "[variables('adminUsername')]",
               "adminPassword": "[variables('adminPassword')]",
               "linuxConfiguration": {
