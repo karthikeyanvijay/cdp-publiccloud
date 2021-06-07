@@ -1,6 +1,6 @@
 {
-  "datalakeName": "cdpvkazuredl",
-  "environmentName": "cdpvkazure",
+  "datalakeName": "vkcdpazuredl",
+  "environmentName": "vkcdpazure",
   "cloudProviderConfiguration": {
     "managedIdentity": "/subscriptions/da35404a-2612-4419-baef-45fcdce6045e/resourcegroups/vkarthikeyan/providers/Microsoft.ManagedIdentity/userAssignedIdentities/cdpvkar-AssumerIdentity",
     "storageLocation": "abfs://data@cdpvkar.dfs.core.windows.net"
@@ -18,7 +18,7 @@
     },
     {
         "key": "enddate",
-        "value": "06302022"
+        "value": "07302022"
     }
   ],
   "runtime": "7.2.9",

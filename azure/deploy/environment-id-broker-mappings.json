@@ -1,5 +1,5 @@
 {
-    "environmentName": "cdpvkazure",
+    "environmentName": "vkcdpazure",
     "dataAccessRole": "/subscriptions/da35404a-2612-4419-baef-45fcdce6045e/resourcegroups/vkarthikeyan/providers/Microsoft.ManagedIdentity/userAssignedIdentities/cdpvkar-DataAccessIdentity",
     "rangerAuditRole": "/subscriptions/da35404a-2612-4419-baef-45fcdce6045e/resourcegroups/vkarthikeyan/providers/Microsoft.ManagedIdentity/userAssignedIdentities/cdpvkar-RangerIdentity",
     "rangerCloudAccessAuthorizerRole": "/subscriptions/da35404a-2612-4419-baef-45fcdce6045e/resourcegroups/vkarthikeyan/providers/Microsoft.ManagedIdentity/userAssignedIdentities/cdpvkar-DataAccessIdentity",
