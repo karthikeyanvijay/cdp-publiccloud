@@ -1,0 +1,17 @@
+{
+    "clusterName": "vkcdpde",
+    "clusterDefinitionName": "7.2.9 - Data Engineering for Azure",
+    "environmentName": "vkcdpazure",
+    "clusterTemplateName": "7.2.9 - Data Engineering: Apache Spark, Apache Hive, Apache Oozie",
+    "tags": [
+        {
+            "key": "Project",
+            "value": "AMD"
+        },
+        {
+            "key": "Owner",
+            "value": "Vijay Anand Karthikeyan"
+        }
+    ],
+    "datahubDatabase": "NONE"
+}

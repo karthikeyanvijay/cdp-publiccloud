@@ -1,5 +1,5 @@
 {
-    "environmentCrn": "crn:cdp:environments:us-west-1:558bc1d2-8867-4357-8524-311d51259233:environment:88f71b23-fc7f-446e-b73e-f1f86e61f230",
+    "environmentCrn": "crn:cdp:environments:us-west-1:558bc1d2-8867-4357-8524-311d51259233:environment:56fd7368-28c0-4971-8276-5ad03235332c",
     "useOverlayNetwork": true,
     "whitelistIpCIDRs": "0.0.0.0/0",
     "usePrivateLoadBalancer": true,
