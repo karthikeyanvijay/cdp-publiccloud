@@ -1,5 +1,5 @@
 {
-    "clusterName": "vkcdpde",
+    "clusterName": "vkcdpde1",
     "clusterDefinitionName": "7.2.9 - Data Engineering for Azure",
     "environmentName": "vkcdpazure",
     "clusterTemplateName": "7.2.9 - Data Engineering: Apache Spark, Apache Hive, Apache Oozie",
